@@ -19,9 +19,25 @@ export class MenuScene extends Phaser.Scene {
         super({ key: 'MenuScene' });
     }
 
+    public init(): void {
+        // Tắt màn hình Splash Screen Capacitor sớm nhất có thể để hiện giao diện HTML Loading mượt mà
+        try {
+            import('@capacitor/splash-screen').then(({ SplashScreen }) => {
+                SplashScreen.hide().catch(() => {});
+            });
+        } catch (e) {}
+    }
+
     public preload(): void {
+        // Cập nhật thanh tiến trình load trên giao diện
+        this.load.on('progress', (value: number) => {
+            const bar = document.getElementById('first-load-bar');
+            if (bar) {
+                bar.style.width = `${Math.round(value * 100)}%`;
+            }
+        });
+
         this.load.audio('bgm_home', 'assets/home.mp3');
-        this.load.audio('bgm_ingame', 'assets/ingame.mp3');
     }
 
     public create(): void {
@@ -137,6 +153,7 @@ export class MenuScene extends Phaser.Scene {
                 if (homeBgm && homeBgm.isPlaying) {
                     homeBgm.stop();
                 }
+                UIBridge.showLoading("LOADING BATTLEFIELD...");
                 this.scene.start('PlayScene');
             },
             // Callback khi mở Cửa hàng

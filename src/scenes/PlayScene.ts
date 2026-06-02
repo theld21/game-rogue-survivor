@@ -193,9 +193,22 @@ export class PlayScene extends Phaser.Scene {
 
     public preload(): void {
         TextureGenerator.generateAll(this);
+        // Tải bất đồng bộ nhạc ingame để giảm tải lúc mở app lần đầu
+        this.load.audio('bgm_ingame', 'assets/ingame.mp3');
+
+        // Cập nhật thanh tiến trình loading màn chơi
+        this.load.on('progress', (value: number) => {
+            const bar = document.getElementById('loading-bar');
+            if (bar) {
+                bar.style.width = `${Math.round(value * 100)}%`;
+            }
+        });
     }
 
     public create(): void {
+        // Tắt màn hình chờ chuyển cảnh HTML
+        UIBridge.hideLoading();
+
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
         const virtualWidth = width / this.zoomVal;
