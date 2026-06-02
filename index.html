@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <script>
+        window.onerror = function (message, source, lineno, colno, error) {
+            const div = document.createElement('div');
+            div.style.position = 'fixed';
+            div.style.top = '0';
+            div.style.left = '0';
+            div.style.width = '100%';
+            div.style.background = 'rgba(239, 68, 68, 0.95)';
+            div.style.color = 'white';
+            div.style.zIndex = '999999';
+            div.style.padding = '12px';
+            div.style.fontSize = '12px';
+            div.style.fontFamily = 'monospace';
+            div.style.wordBreak = 'break-all';
+            div.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            div.innerHTML = '<strong>[Runtime Error]</strong> ' + message + '<br><small>at ' + source + ':' + lineno + ':' + colno + '</small>';
+            document.body.appendChild(div);
+            return false;
+        };
+    </script>
+    <title>Rogue Survivor</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="game-wrapper">
+        <!-- FIRST TIME INITIAL LOADING SCREEN (WEB SPLASH SCREEN) -->
+        <div id="first-load-screen"
+            class="fixed inset-0 bg-[#05020c] z-[100] flex flex-col justify-center items-center transition-opacity duration-500 ease-out pointer-events-auto">
+            <div class="flex flex-col items-center gap-6">
+                <!-- Logo Image -->
+                <img src="assets/splash_art.png" alt="Rogue Survivor Logo" class="w-48 h-48 md:w-64 md:h-64 object-contain animate-pulse" />
+                <!-- Loading indicator -->
+                <div class="flex flex-col items-center gap-2">
+                    <span class="text-glow-cyan text-cyan-400 text-[10px] font-black tracking-[0.25em] uppercase">
+                        INITIALIZING SYSTEM
+                    </span>
+                    <div class="w-24 h-0.5 bg-slate-900 rounded-full overflow-hidden">
+                        <div class="h-full bg-cyan-400" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nơi Phaser chèn Canvas -->
+        <div id="game-container"></div>
+
+        <!-- 1. GIAO DIỆN CHỜ & CHỌN NHÂN VẬT (MENU UI OVERLAY) -->
+        <div id="menu-ui"
+            class="ui-overlay ui-overlay-blocking justify-between px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-b from-[#060312] via-[#0b0720] to-[#04020c] cyber-grid-bg z-50 overflow-y-auto">
+            <!-- Header Tiêu đề & Quỹ Vàng -->
+            <div class="text-center mt-6">
+                <h1
+                    class="glow-title text-5xl md:text-7xl font-black tracking-widest uppercase select-none animate-pulse">
+                    ROGUE SURVIVOR
+                </h1>
+            </div>
+
+            <!-- Middle: Player Info Card -->
+            <div
+                class="w-full max-w-sm mx-auto p-6 cyber-panel cyber-panel-cyan cyber-grid-bg rounded-3xl text-center flex flex-col items-center ui-element">
+                <h3
+                    class="text-amber-400 font-bold text-xs tracking-[0.15em] uppercase select-none mb-4 text-glow-gold">
+                    Hero Information
+                </h3>
+
+                <!-- Player Icon and Appearance Preview inside Hologram capsule -->
+                <div class="hologram-capsule w-32 py-4 flex items-center justify-center mb-2">
+                    <canvas id="menu-player-preview-canvas" width="96" height="96"
+                        class="w-16 h-16 transition-all duration-300"></canvas>
+                </div>
+
+                <div class="mt-4 space-y-1">
+                    <p class="text-white text-lg font-black tracking-wide"><span id="menu-hero-name"
+                            class="text-yellow-400 text-glow-gold">Hero Name</span></p>
+                    <p class="text-white text-xs font-bold">Class: <span id="menu-char-type-name"
+                            class="text-cyber font-bold text-glow-cyan">Knight</span></p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div
+                    class="grid grid-cols-2 gap-3 w-full mt-5 bg-slate-950/70 p-4 rounded-2xl border border-slate-800 text-xs text-left">
+                    <div class="flex items-center gap-2 text-slate-300">
+                        <i data-lucide="coins" class="w-4 h-4 text-yellow-400 shrink-0"></i>
+                        <span>Gold: <strong id="menu-gold-val" class="text-yellow-400 font-bold">0</strong></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-300">
+                        <i data-lucide="heart" class="w-4 h-4 text-rose-500 shrink-0"></i>
+                        <span>HP: <strong id="menu-stat-hp" class="text-rose-400 font-bold">Lv.0</strong></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-300">
+                        <i data-lucide="zap" class="w-4 h-4 text-cyan-400 shrink-0"></i>
+                        <span>Speed: <strong id="menu-stat-speed" class="text-cyan-400 font-bold">Lv.0</strong></span>
+                    </div>
+                    <div class="flex items-center gap-2 text-slate-300">
+                        <i data-lucide="swords" class="w-4 h-4 text-amber-500 shrink-0"></i>
+                        <span>Damage: <strong id="menu-stat-damage"
+                                class="text-amber-400 font-bold">Lv.0</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom: Menu Buttons -->
+            <div class="w-full max-w-xs mx-auto flex flex-col gap-3.5 mb-6 ui-element">
+                <button id="start-game-btn"
+                    class="w-full py-3.5 cyber-btn cyber-btn-gold text-sm rounded-2xl border shadow-lg flex items-center justify-center gap-2">
+                    <i data-lucide="play" class="w-4 h-4 fill-slate-950"></i> START GAME
+                </button>
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button id="open-shop-btn"
+                        class="w-full py-3 cyber-btn cyber-btn-cyan text-xs rounded-2xl border shadow-md flex items-center justify-center gap-2">
+                        SHOP
+                    </button>
+                    <button id="open-settings-btn"
+                        class="w-full py-3 cyber-btn cyber-btn-dark text-xs rounded-2xl border shadow-md flex items-center justify-center gap-2">
+                        SETTINGS
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1.5. GIAO DIỆN CHỌN HỆ ĐẦU TIÊN (INTRO / CLASS SELECT MODAL) -->
+        <div id="intro-modal"
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-slate-950/98 z-55 hidden p-4 flex-col overflow-y-auto cyber-grid-bg">
+            <div
+                class="w-full max-w-sm p-6 cyber-panel cyber-panel-cyan cyber-grid-bg rounded-3xl shadow-2xl text-center flex flex-col items-center ui-element">
+                <h2 class="text-xl font-bold text-cyan-400 tracking-[0.1em] uppercase mb-2 text-glow-cyan">
+                    CHOOSE YOUR CLASS
+                </h2>
+                <p class="text-xs text-slate-400 mb-5 leading-relaxed px-2">
+                    The dark forces are rising. Choose your starting hero:
+                </p>
+
+                <!-- Class Cards Row -->
+                <div class="grid grid-cols-3 gap-2.5 w-full">
+                    <!-- Knight Card -->
+                    <button id="intro-knight-btn"
+                        class="flex flex-col items-center p-3 rounded-2xl border bg-slate-950/40 border-slate-800 text-center transition-all select-none cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-cyan-950/30 border border-cyan-500/30 mb-2 flex items-center justify-center text-white text-lg font-bold">
+                            ⚔️
+                        </div>
+                        <span class="text-xs font-semibold text-slate-300">Knight</span>
+                    </button>
+                    <!-- Mage Card -->
+                    <button id="intro-mage-btn"
+                        class="flex flex-col items-center p-3 rounded-2xl border bg-slate-950/20 border-slate-800 text-center opacity-70 transition-all select-none cursor-pointer hover:border-fuchsia-400 hover:shadow-[0_0_10px_rgba(217,70,239,0.15)]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-fuchsia-950/30 border border-fuchsia-500/30 mb-2 flex items-center justify-center text-white text-lg">
+                            🔮
+                        </div>
+                        <span class="text-xs font-semibold text-slate-300">Mage</span>
+                    </button>
+                    <!-- Ranger Card -->
+                    <button id="intro-ranger-btn"
+                        class="flex flex-col items-center p-3 rounded-2xl border bg-slate-950/20 border-slate-800 text-center opacity-70 transition-all select-none cursor-pointer hover:border-green-400 hover:shadow-[0_0_10px_rgba(34,197,94,0.15)]">
+                        <div
+                            class="w-10 h-10 rounded-full bg-green-950/30 border border-green-500/30 mb-2 flex items-center justify-center text-white text-lg font-bold">
+                            🏹
+                        </div>
+                        <span class="text-xs font-semibold text-slate-300">Ranger</span>
+                    </button>
+                </div>
+
+                <!-- Detailed info of selected class -->
+                <div
+                    class="w-full mt-4 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-xs text-left shadow-[inset_0_0_15px_rgba(0,0,0,0.4)] space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-12 h-12 rounded-full border border-cyan-400/30 bg-slate-900 flex items-center justify-center">
+                            <canvas id="intro-preview-avatar-canvas" width="96" height="96" class="w-10 h-10"></canvas>
+                        </div>
+                        <div>
+                            <h4 id="intro-preview-class" class="text-white font-bold text-sm tracking-wide">Class:
+                                Knight</h4>
+                            <p id="intro-preview-weapon" class="text-[10px] text-amber-400 font-medium">Weapon: Sword ⚔️
+                            </p>
+                        </div>
+                    </div>
+                    <p id="intro-preview-desc" class="text-[10px] text-slate-400 leading-normal">
+                        High HP, melee combat with wide range. Excellent at sweeping nearby targets with sword energy.
+                    </p>
+
+                    <!-- Base Stats Grid -->
+                    <div
+                        class="grid grid-cols-3 gap-2 bg-slate-950/90 p-2.5 rounded-xl border border-slate-900 text-[10px]">
+                        <div class="flex flex-col">
+                            <span class="text-slate-500 font-semibold uppercase tracking-wider text-[8px]">HP</span>
+                            <span id="intro-preview-hp" class="text-rose-400 font-bold text-xs mt-0.5">130</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-500 font-semibold uppercase tracking-wider text-[8px]">Speed</span>
+                            <span id="intro-preview-speed" class="text-cyan-400 font-bold text-xs mt-0.5">190</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-500 font-semibold uppercase tracking-wider text-[8px]">DMG</span>
+                            <span id="intro-preview-dmg" class="text-amber-400 font-bold text-xs mt-0.5">14</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Area -->
+                <div
+                    class="w-full mt-5 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-xs text-left shadow-[inset_0_0_15px_rgba(0,0,0,0.4)]">
+                    <h4
+                        class="text-amber-400 font-bold text-center mb-3 uppercase tracking-wider text-[10px] text-glow-gold">
+                        Skill Overview
+                    </h4>
+
+                    <div id="intro-simulation"
+                        class="relative w-full h-28 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden select-none">
+                        <canvas id="sim-canvas" width="400" height="112"
+                            class="w-full h-full block bg-slate-950"></canvas>
+                    </div>
+                </div>
+
+                <!-- Confirm Button -->
+                <button id="intro-confirm-btn"
+                    class="w-full mt-5 py-3.5 cyber-btn cyber-btn-cyan text-xs rounded-2xl border shadow-md">
+                    START JOURNEY
+                </button>
+            </div>
+        </div>
+
+        <!-- 1.6. GIAO DIỆN CỬA HÀNG (SHOP MODAL) -->
+        <div id="shop-modal"
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-slate-950/98 z-55 hidden p-4 flex-col overflow-y-auto cyber-grid-bg">
+            <div
+                class="w-full max-w-sm p-5 cyber-panel cyber-panel-cyan cyber-grid-bg rounded-3xl shadow-2xl flex flex-col justify-between ui-element">
+                <!-- Shop Header -->
+                <div class="flex justify-between items-center px-1 mb-4">
+                    <h3 class="text-white font-bold text-sm tracking-wider flex items-center gap-1.5 text-glow-cyan">
+                        UPGRADE SHOP
+                    </h3>
+                    <div
+                        class="flex items-center gap-1.5 px-3 py-1 bg-yellow-950/40 border border-yellow-500/20 rounded-full text-xs">
+                        <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-400"></i>
+                        <span id="shop-gold" class="text-yellow-400 font-bold">0</span>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div
+                    class="grid grid-cols-2 gap-1 bg-slate-950/60 p-1 rounded-2xl border border-slate-800 mb-4 text-center">
+                    <button id="tab-upgrade-btn"
+                        class="py-2 rounded-xl text-[10px] font-bold text-[#00f0ff] bg-cyan-950/20 border border-[#00f0ff]/30 transition-all cursor-pointer shadow-[inset_0_0_10px_rgba(0,240,255,0.1)]">
+                        STATS
+                    </button>
+                    <button id="tab-class-btn"
+                        class="py-2 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white transition-all cursor-pointer">
+                        CHANGE CLASS
+                    </button>
+                </div>
+
+                <!-- TAB CONTENT CONTAINER -->
+                <div
+                    class="flex-1 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 min-h-[260px] max-h-[300px] overflow-y-auto mb-4">
+
+                    <!-- Content 1: Upgrades -->
+                    <div id="shop-content-upgrades" class="space-y-2.5">
+                        <!-- HP Upgrade -->
+                        <div
+                            class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 text-xs">
+                            <div class="space-y-0.5 flex-1 pr-2">
+                                <p id="shop-upgrade-hp-title"
+                                    class="text-white font-bold uppercase text-[11px] tracking-wide">HP MAX (Lv.0)
+                                </p>
+                                <p id="shop-upgrade-hp-desc" class="text-[10px] text-cyan-400">Increased permanently:
+                                    +0% HP
+                                </p>
+                            </div>
+                            <button id="buy-upgrade-hp-btn"
+                                class="px-3.5 py-1.5 cyber-btn cyber-btn-gold text-[11px] rounded-lg flex items-center gap-1 shrink-0">
+                                🪙 50
+                            </button>
+                        </div>
+                        <!-- Speed Upgrade -->
+                        <div
+                            class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 text-xs">
+                            <div class="space-y-0.5 flex-1 pr-2">
+                                <p id="shop-upgrade-speed-title"
+                                    class="text-white font-bold uppercase text-[11px] tracking-wide">SPEED (Lv.0)</p>
+                                <p id="shop-upgrade-speed-desc" class="text-[10px] text-cyan-400">Increased
+                                    permanently: +0% SPEED
+                                </p>
+                            </div>
+                            <button id="buy-upgrade-speed-btn"
+                                class="px-3.5 py-1.5 cyber-btn cyber-btn-gold text-[11px] rounded-lg flex items-center gap-1 shrink-0">
+                                🪙 50
+                            </button>
+                        </div>
+                        <!-- Damage Upgrade -->
+                        <div
+                            class="flex items-center justify-between bg-slate-900/40 p-3 rounded-xl border border-slate-800/80 text-xs">
+                            <div class="space-y-0.5 flex-1 pr-2">
+                                <p id="shop-upgrade-damage-title"
+                                    class="text-white font-bold uppercase text-[11px] tracking-wide">DAMAGE BULLET
+                                    (Lv.0)
+                                </p>
+                                <p id="shop-upgrade-damage-desc" class="text-[10px] text-cyan-400">Increased
+                                    permanently:
+                                    +0% DMG
+                                </p>
+                            </div>
+                            <button id="buy-upgrade-damage-btn"
+                                class="px-3.5 py-1.5 cyber-btn cyber-btn-gold text-[11px] rounded-lg flex items-center gap-1 shrink-0">
+                                🪙 50
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content 2: Class Changes -->
+                    <div id="shop-content-class" class="hidden space-y-2">
+                        <div class="space-y-2">
+                            <!-- Class Knight -->
+                            <div
+                                class="flex items-center justify-between bg-slate-900/40 p-2.5 rounded-xl border border-slate-800/80 text-[11px]">
+                                <div class="flex items-center gap-2.5">
+                                    <canvas id="shop-class-knight-canvas" width="96" height="96"
+                                        class="w-8 h-8 rounded-full border border-cyan-400/30 bg-cyan-950/20 shadow-[0_0_8px_rgba(0,240,255,0.2)]"></canvas>
+                                    <div>
+                                        <p class="text-white font-bold">KNIGHT</p>
+                                        <p class="text-[9px] text-slate-400">Wide sword qi ⚔️</p>
+                                    </div>
+                                </div>
+                                <button id="buy-class-knight-btn"
+                                    class="px-2.5 py-1.5 cyber-btn cyber-btn-gold text-[9px] rounded-lg">
+                                    🪙 50
+                                </button>
+                            </div>
+                            <!-- Class Mage -->
+                            <div
+                                class="flex items-center justify-between bg-slate-900/40 p-2.5 rounded-xl border border-slate-800/80 text-[11px]">
+                                <div class="flex items-center gap-2.5">
+                                    <canvas id="shop-class-mage-canvas" width="96" height="96"
+                                        class="w-8 h-8 rounded-full border border-fuchsia-400/30 bg-fuchsia-950/20 shadow-[0_0_8px_rgba(217,70,239,0.2)]"></canvas>
+                                    <div>
+                                        <p class="text-white font-bold">MAGE</p>
+                                        <p class="text-[9px] text-slate-400">Explosive fireball 🔮</p>
+                                    </div>
+                                </div>
+                                <button id="buy-class-mage-btn"
+                                    class="px-2.5 py-1.5 cyber-btn cyber-btn-gold text-[9px] rounded-lg">
+                                    🪙 50
+                                </button>
+                            </div>
+                            <!-- Class Ranger -->
+                            <div
+                                class="flex items-center justify-between bg-slate-900/40 p-2.5 rounded-xl border border-slate-800/80 text-[11px]">
+                                <div class="flex items-center gap-2.5">
+                                    <canvas id="shop-class-ranger-canvas" width="96" height="96"
+                                        class="w-8 h-8 rounded-full border border-green-400/30 bg-green-950/20 shadow-[0_0_8px_rgba(34,197,94,0.2)]"></canvas>
+                                    <div>
+                                        <p class="text-white font-bold">RANGER</p>
+                                        <p class="text-[9px] text-slate-400">Penetrating arrow 🏹</p>
+                                    </div>
+                                </div>
+                                <button id="buy-class-ranger-btn"
+                                    class="px-2.5 py-1.5 cyber-btn cyber-btn-gold text-[9px] rounded-lg">
+                                    🪙 50
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shop Footer -->
+                <button id="close-shop-btn"
+                    class="w-full py-2.5 cyber-btn cyber-btn-dark text-xs rounded-xl flex items-center justify-center gap-1.5">
+                    CLOSE SHOP
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. GIAO DIỆN CHƠI TRONG TRẬN (PLAY UI OVERLAY) -->
+        <div id="play-ui" class="ui-overlay px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))] justify-between hidden z-30">
+            <!-- Thanh XP và các Text UI trên đầu -->
+            <div class="w-full space-y-3">
+                <!-- Thanh XP tràn viền -->
+                <div id="xp-bar-container"
+                    class="ui-element w-full h-2 bg-slate-900/60 rounded-full border border-slate-700/50 overflow-hidden mt-0 shadow-inner">
+                    <div id="xp-bar"
+                        class="h-full bg-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+                        style="width: 0%"></div>
+                </div>
+                <!-- Dòng chỉ số -->
+                <div class="flex justify-between items-start px-1 text-xs">
+                    <div class="flex flex-col gap-1">
+                        <span id="play-level"
+                            class="text-cyan-400 font-extrabold text-base drop-shadow-sm select-none">LEVEL 1</span>
+                        <span id="play-stage"
+                            class="text-amber-400 font-bold text-[10px] uppercase tracking-wider select-none">Stage
+                            1</span>
+                        <span id="play-kills" class="text-rose-400/90 font-medium text-[10px] select-none">Kills:
+                            0</span>
+                    </div>
+                    <div class="text-center mt-1">
+                        <span id="play-timer"
+                            class="text-white font-mono text-2xl font-black tracking-widest select-none">00:00</span>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-3">
+                        <span id="play-gold"
+                            class="text-yellow-400 font-bold text-base select-none flex items-center justify-end gap-1.5">
+                            <i data-lucide="coins" class="w-4 h-4 text-yellow-400"></i>
+                            <span id="play-gold-text">0</span>
+                        </span>
+                        <button id="pause-btn"
+                            class="ui-element flex items-center justify-center w-8 h-8 bg-slate-900/60 border border-white/10 text-white rounded-xl hover:bg-white hover:text-slate-950 transition-all transform active:scale-90 cursor-pointer"
+                            title="Pause">
+                            <i data-lucide="pause" class="w-4.5 h-4.5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh HP lơ lửng trên đầu Player -->
+            <div id="player-hp-container"
+                class="absolute w-12 h-1.5 bg-slate-950/80 border border-white/10 rounded-full overflow-hidden pointer-events-none hidden shadow-md">
+                <div id="player-hp-bar" class="h-full bg-emerald-500 transition-all duration-100" style="width: 100%">
+                </div>
+            </div>
+
+            <!-- BOSS HEALTH BAR OVERLAY (HIỂN THỊ KHI BOSS XUẤT HIỆN) -->
+            <div id="boss-hp-container"
+                class="absolute w-16 h-1.5 bg-slate-950/80 border border-red-500/30 rounded-full overflow-hidden pointer-events-none hidden shadow-md z-30">
+                <div id="boss-hp-bar" class="h-full bg-red-500 transition-all duration-100" style="width: 100%"></div>
+            </div>
+
+            <div></div>
+        </div>
+
+        <!-- 3. GIAO DIỆN LÊN CẤP KỸ NĂNG (LEVEL UP UI OVERLAY) -->
+        <div id="levelup-ui"
+            class="ui-overlay justify-center items-center bg-slate-950/80 hidden z-40 pointer-events-auto">
+            <div
+                class="w-full max-w-xs p-5 cyber-panel cyber-panel-cyan rounded-3xl shadow-2xl mx-4 text-center ui-element">
+                <h2 class="text-xl font-extrabold text-yellow-400 mb-1 tracking-wide uppercase text-glow-gold">New
+                    LEVEL!</h2>
+                <p class="text-[11px] text-slate-400 mb-5 leading-normal">Choose 1 skill upgrade to continue your
+                    journey:</p>
+
+                <div id="skills-container" class="space-y-2.5">
+                    <!-- Thẻ kỹ năng sẽ được render tự động qua JS Bridge -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3.5. GIAO DIỆN TẠM DỪNG TRẬN ĐẤU (PAUSE UI OVERLAY) -->
+        <div id="pause-ui"
+            class="ui-overlay justify-center items-center bg-slate-950/80 hidden z-40 pointer-events-auto">
+            <div
+                class="w-full max-w-xs p-5 cyber-panel rounded-3xl shadow-2xl mx-4 text-center border-slate-800 ui-element">
+                <h2 class="text-xl font-bold text-white mb-1 uppercase tracking-wider">PAUSE</h2>
+                <p class="text-[11px] text-slate-400 mb-6">The battle is frozen</p>
+
+                <!-- Volume adjustments in Pause Menu -->
+                <div
+                    class="w-full mb-6 text-left space-y-4 bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800/80">
+                    <!-- BGM Volume -->
+                    <div class="space-y-2">
+                        <div
+                            class="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">
+                            <span>BGM VOLUME</span>
+                            <span id="pause-volume-percent" class="text-[#ffd700]">80%</span>
+                        </div>
+                        <input id="pause-volume-slider" type="range" min="0" max="100" value="80"
+                            class="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-[#ffd700]" />
+                    </div>
+                    <!-- SFX Volume -->
+                    <div class="space-y-2">
+                        <div
+                            class="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none">
+                            <span>SFX VOLUME</span>
+                            <span id="pause-sfx-percent" class="text-[#ffd700]">80%</span>
+                        </div>
+                        <input id="pause-sfx-slider" type="range" min="0" max="100" value="80"
+                            class="w-full h-1.5 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-[#ffd700]" />
+                    </div>
+                </div>
+
+                <div class="space-y-2.5">
+                    <button id="pause-resume-btn"
+                        class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-gold text-xs rounded-xl">
+                        <i data-lucide="play" class="w-3.5 h-3.5 fill-slate-950"></i> CONTINUE
+                    </button>
+                    <button id="pause-exit-btn"
+                        class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-dark text-xs rounded-xl">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> EXIT TO MENU
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. GIAO DIỆN THẮNG/THUA (GAMEOVER UI OVERLAY) -->
+        <div id="gameover-ui"
+            class="ui-overlay justify-center items-center bg-slate-950/90 hidden z-40 pointer-events-auto">
+            <div id="gameover-panel" class="w-full max-w-xs p-6 cyber-panel rounded-3xl mx-4 text-center ui-element">
+                <h2 id="gameover-title" class="text-2xl font-black tracking-wider mb-2 uppercase">YOU DIED</h2>
+                <p class="text-slate-400 text-[10px] tracking-widest uppercase font-semibold mb-5">Battle result</p>
+
+                <!-- Bảng số liệu -->
+                <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 space-y-3 mb-5 text-xs text-left">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 flex items-center gap-2"><i data-lucide="clock"
+                                class="w-4 h-4 text-slate-400"></i> Survival:</span>
+                        <span id="gameover-time" class="text-white font-mono font-bold">00:00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 flex items-center gap-2"><i data-lucide="swords"
+                                class="w-4 h-4 text-slate-400"></i> Kills:</span>
+                        <span id="gameover-kills" class="text-white font-bold">0 kills</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 flex items-center gap-2"><i data-lucide="coins"
+                                class="w-4 h-4 text-yellow-400"></i> Gold:</span>
+                        <span id="gameover-gold-collected" class="text-yellow-400 font-bold">+0</span>
+                    </div>
+                    <div id="gameover-victory-bonus"
+                        class="flex justify-between items-center text-emerald-400 font-bold hidden">
+                        <span class="flex items-center gap-2"><i data-lucide="trophy"
+                                class="w-4 h-4 text-yellow-400"></i> Victory bonus:</span>
+                        <span>+200 Gold</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-slate-800 pt-3 mt-1">
+                        <span class="text-slate-400 font-medium">Total gold:</span>
+                        <span id="gameover-gold-total" class="text-yellow-400 font-bold flex items-center gap-1"><i
+                                data-lucide="coins" class="w-3.5 h-3.5"></i> 0</span>
+                    </div>
+                </div>
+
+                <!-- Nút thao tác -->
+                <div class="space-y-2.5">
+                    <button id="retry-btn"
+                        class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-gold text-xs rounded-xl">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> PLAY AGAIN
+                    </button>
+                    <button id="back-menu-btn"
+                        class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-dark text-xs rounded-xl">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5"></i> BACK TO MENU
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. GIAO DIỆN CÀI ĐẶT (SETTINGS MODAL) -->
+        <div id="settings-modal"
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-slate-950/98 z-55 hidden p-4 flex-col overflow-y-auto cyber-grid-bg">
+            <div
+                class="w-full max-w-sm p-6 cyber-panel border-slate-800 rounded-3xl shadow-2xl flex flex-col justify-between ui-element">
+                <!-- Settings Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-white font-bold text-sm tracking-wider flex items-center gap-1.5 text-glow-cyan">
+                        HERO SETTINGS
+                    </h3>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="flex-1 space-y-5 mb-6">
+                    <!-- Hero Name Input -->
+                    <div class="space-y-2">
+                        <label for="settings-hero-name-input"
+                            class="text-xs text-slate-400 font-bold uppercase tracking-wider block text-left">
+                            Hero name
+                        </label>
+                        <input id="settings-hero-name-input" type="text" maxlength="15" placeholder="Enter name..."
+                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-[#00f0ff] rounded-xl text-white text-xs outline-none transition-all" />
+                    </div>
+
+                    <!-- BGM Volume slider in Settings -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="settings-volume-slider"
+                                class="text-xs text-slate-400 font-bold uppercase tracking-wider block text-left select-none">
+                                Music volume
+                            </label>
+                            <span id="settings-volume-percent" class="text-xs text-cyan-400 font-bold">80%</span>
+                        </div>
+                        <input id="settings-volume-slider" type="range" min="0" max="100" value="80"
+                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#00f0ff]" />
+                    </div>
+
+                    <!-- SFX Volume slider in Settings -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label for="settings-sfx-slider"
+                                class="text-xs text-slate-400 font-bold uppercase tracking-wider block text-left select-none">
+                                Sound Effects Volume
+                            </label>
+                            <span id="settings-sfx-percent" class="text-xs text-cyan-400 font-bold">80%</span>
+                        </div>
+                        <input id="settings-sfx-slider" type="range" min="0" max="100" value="80"
+                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#00f0ff]" />
+                    </div>
+
+                    <!-- Reset Data Button -->
+                    <div class="pt-4 border-t border-slate-900 text-left">
+                        <p class="text-[10px] text-slate-500 mb-2 leading-relaxed">
+                            This action will completely delete all progress of upgrading stats, gold, and the selected
+                            hero system and restore the original game settings.
+                        </p>
+                        <button id="reset-data-btn"
+                            class="w-full py-3 bg-red-950/30 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-white text-xs font-bold rounded-xl transition-all cursor-pointer">
+                            DELETE ALL DATA
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Footer Buttons -->
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button id="close-settings-btn"
+                        class="py-2.5 cyber-btn cyber-btn-dark text-xs rounded-xl flex items-center justify-center">
+                        CANCEL
+                    </button>
+                    <button id="save-settings-btn"
+                        class="py-2.5 cyber-btn cyber-btn-cyan text-xs rounded-xl flex items-center justify-center font-bold">
+                        SAVE CHANGES
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. GIAO DIỆN LOADING CHUYỂN CẢNH (LOADING UI OVERLAY) -->
+        <div id="loading-ui"
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-[#05020c] z-90 hidden flex-col">
+            <div class="text-center space-y-4">
+                <h2 class="text-glow-cyan text-cyan-400 text-sm font-black tracking-[0.2em] uppercase animate-pulse">
+                    LOADING MAP...
+                </h2>
+                <div class="w-48 h-1 bg-slate-950 border border-white/5 rounded-full overflow-hidden">
+                    <div id="loading-bar" class="h-full bg-cyan-400" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HỘP THOẠI XÁC NHẬN TÙY CHỈNH (CUSTOM CONFIRM MODAL) -->
+        <div id="confirm-modal"
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-slate-950/85 z-60 hidden p-4 flex-col">
+            <div
+                class="w-full max-w-xs p-5 cyber-panel border-red-500/30 rounded-3xl shadow-2xl mx-4 text-center ui-element">
+                <h3 class="text-xs font-bold text-red-400 mb-2 uppercase tracking-wider text-glow-purple">Confirm</h3>
+                <p id="confirm-message" class="text-[11px] text-slate-300 mb-5 leading-normal">Are you sure you want to
+                    proceed?</p>
+                <div class="grid grid-cols-2 gap-3 w-full">
+                    <button id="confirm-cancel-btn"
+                        class="py-2.5 cyber-btn cyber-btn-dark text-[10px] rounded-xl flex items-center justify-center">
+                        CANCEL
+                    </button>
+                    <button id="confirm-ok-btn"
+                        class="py-2.5 bg-red-950/40 border border-red-500/40 hover:border-red-500 text-red-400 hover:text-white text-[10px] font-bold rounded-xl transition-all cursor-pointer flex items-center justify-center">
+                        CONFIRM
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- DANH SÁCH THÔNG BÁO TẠM THỜI (TOAST NOTIFICATIONS) -->
+        <div id="toast-container"
+            class="fixed top-6 left-1/2 -translate-x-1/2 z-60 flex flex-col gap-2 pointer-events-none"></div>
+    </div>
+
+    <!-- Script main.ts -->
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
