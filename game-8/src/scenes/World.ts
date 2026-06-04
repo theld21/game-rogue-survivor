@@ -255,6 +255,7 @@ export class World extends Phaser.Scene {
 
   private collectTick(dt: number): void {
     const isl = this.islands.find((i) => i.info.id === this.dockedId); if (!isl) return;
+    if (this.ship.cargoFull()) { this.collectAcc = 0; return; }   // don't let the accumulator grow unbounded
     const el = isl.info.element as ElementKind;
     this.collectAcc += RUN.collectPerSec * dt;
     while (this.collectAcc >= 1 && !this.ship.cargoFull()) {
@@ -332,7 +333,8 @@ export class World extends Phaser.Scene {
     if (this.isOver) return; this.isOver = true;
     this.lives--;   // a death costs a life + all cargo (credits/gold are kept)
     const burst = this.add.particles(this.ship.x, this.ship.y, 'spark', { speed: { min: 100, max: 360 }, scale: { start: 0.9, end: 0 }, lifespan: { min: 300, max: 700 }, quantity: 30, blendMode: 'ADD', tint: [COLORS.ember, COLORS.gold, COLORS.white], emitting: false }).setDepth(60);
-    burst.explode(34); this.cameras.main.shake(500, 0.02); this.cameras.main.flash(300, 255, 90, 71);
+    burst.explode(34); this.time.delayedCall(900, () => burst.destroy());   // free the emitter (was leaking per death)
+    this.cameras.main.shake(500, 0.02); this.cameras.main.flash(300, 255, 90, 71);
     AudioManager.explode(); this.ship.setVisible(false);
     if (this.lives <= 0) {
       EventBus.emit('gameover', { best: GameState.getBest() });

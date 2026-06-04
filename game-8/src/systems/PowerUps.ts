@@ -47,8 +47,9 @@ export class PowerUps {
   }
 
   private collect(p: PU): void {
+    p.active = false;   // deactivate IMMEDIATELY so onCollect can't re-fire while the pop plays
     p.tween?.kill();
-    p.tween = gsap.to(p.cont, { scale: 1.8, alpha: 0, duration: 0.2, ease: 'power2.out', onComplete: () => { p.active = false; p.cont.setActive(false).setVisible(false); } });
+    p.tween = gsap.to(p.cont, { scale: 1.8, alpha: 0, duration: 0.2, ease: 'power2.out', onComplete: () => { p.cont.setActive(false).setVisible(false); } });
   }
 
   private drawIcon(g: Phaser.GameObjects.Graphics, kind: PowerKind): void {
