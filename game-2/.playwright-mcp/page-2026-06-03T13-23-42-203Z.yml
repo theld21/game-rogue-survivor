@@ -1,0 +1,57 @@
+- generic [ref=e2]:
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Stellar Net" [level=1] [ref=e24]
+        - paragraph [ref=e25]: Constellation RTS · Ultimate Edition
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: "0"
+          - generic [ref=e29]: Victories
+        - generic [ref=e31]:
+          - generic [ref=e32]: "5"
+          - generic [ref=e33]: Stardust ✦
+    - generic [ref=e34]:
+      - button "Launch Campaign" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "✦ Arsenal" [ref=e37] [cursor=pointer]
+        - button "⚙ Settings" [ref=e38] [cursor=pointer]
+    - paragraph [ref=e40]: v1.0 · Procedural Vector Graphics · iOS
+  - generic [ref=e67]:
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - paragraph [ref=e70]: Arsenal
+        - heading "Command Store" [level=2] [ref=e71]
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e74]: ✦
+          - generic [ref=e75]: "5"
+        - button "✕" [ref=e76] [cursor=pointer]
+    - generic [ref=e77]:
+      - button "Tech Tree" [ref=e78] [cursor=pointer]
+      - button "Artifacts" [ref=e79] [cursor=pointer]
+      - button "Cosmetics" [active] [ref=e80] [cursor=pointer]
+    - generic [ref=e81]:
+      - generic [ref=e162]: Star Colour
+      - generic [ref=e163]:
+        - generic [ref=e166]: Neon Blue
+        - generic [ref=e168]: ACTIVE
+      - generic [ref=e169]:
+        - generic [ref=e172]: Emerald Core
+        - button "40 ✦" [ref=e174] [cursor=pointer]
+      - generic [ref=e175]:
+        - generic [ref=e178]: Stellar Gold
+        - button "60 ✦" [ref=e180] [cursor=pointer]
+      - generic [ref=e181]:
+        - generic [ref=e184]: Void Violet
+        - button "80 ✦" [ref=e186] [cursor=pointer]
+      - generic [ref=e187]: Particle Shape
+      - generic [ref=e188]:
+        - generic [ref=e189]: Sphere
+        - generic [ref=e191]: ACTIVE
+      - generic [ref=e192]:
+        - generic [ref=e193]: Nano Cube
+        - button "45 ✦" [ref=e195] [cursor=pointer]
+      - generic [ref=e196]:
+        - generic [ref=e197]: Spark Trail
+        - button "70 ✦" [ref=e199] [cursor=pointer]

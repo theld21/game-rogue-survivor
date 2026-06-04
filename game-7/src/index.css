@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { position: fixed; width: 100%; height: 100%; overflow: hidden; margin: 0; padding: 0; background-color: #04060a; -webkit-tap-highlight-color: transparent; touch-action: none; }
+#game-container canvas { display: block; }
+
+.font-display { font-family: 'Orbitron', sans-serif; }
+.font-body { font-family: 'Rajdhani', sans-serif; }
+.font-mono { font-family: 'Share Tech Mono', monospace; }
+
+.glass { background: rgba(14, 22, 38, 0.7); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 8px 36px rgba(0,0,0,0.5), inset 0 1px 0 rgba(28,242,255,0.08); }
+
+.neon-btn { background-clip: padding-box; -webkit-background-clip: padding-box; transition: transform 0.12s ease, filter 0.12s ease; }
+.neon-btn:active { transform: scale(0.95); filter: brightness(1.2); }
+
+.card { background: linear-gradient(135deg, rgba(20,30,52,0.7), rgba(8,12,22,0.8)); transition: border-color 0.18s ease, transform 0.12s ease; }
+.card.selected { transform: translateY(-2px); }
+.card:active { transform: scale(0.99); }
+
+.pip { width: 8px; height: 8px; border-radius: 9999px; border: 1.5px solid rgba(255,255,255,0.25); }
+.pip.on { background: #1cf2ff; border-color: #1cf2ff; box-shadow: 0 0 6px rgba(28,242,255,0.7); }
+
+/* stamina cell (energy battery) */
+.stam { width: 22px; height: 11px; border-radius: 3px; border: 1.5px solid rgba(255,255,255,0.2); position: relative; transition: all 0.15s; }
+.stam.on { background: linear-gradient(90deg,#1cf2ff,#3da8ff); border-color: #1cf2ff; box-shadow: 0 0 8px rgba(28,242,255,0.6); }
+
+.vol-slider { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 9999px; background: linear-gradient(to right, #1cf2ff var(--pct,50%), #0e1626 var(--pct,50%)); border: 1px solid rgba(255,255,255,0.1); outline: none; }
+.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #1cf2ff; border: 2px solid #fff; box-shadow: 0 0 8px rgba(28,242,255,0.6); }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.panel-scroll::-webkit-scrollbar { width: 4px; }
+.panel-scroll::-webkit-scrollbar-thumb { background: rgba(28,242,255,0.4); border-radius: 4px; }
+
+@keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.pop-in { animation: popIn 0.26s ease forwards; }
+
+@keyframes floatNinja { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+.menu-ninja { animation: floatNinja 2.6s ease-in-out infinite; filter: drop-shadow(0 0 14px rgba(28,242,255,0.4)); }

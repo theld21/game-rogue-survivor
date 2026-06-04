@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Aether Drift</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-skyNight">
+  <div id="game-container" class="fixed inset-0"></div>
+
+  <!-- Loading -->
+  <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-skyNight">
+    <div class="font-display font-black text-3xl tracking-[0.3em] text-aether mb-1">AETHER</div>
+    <div class="font-display font-bold text-lg tracking-[0.5em] text-gold mb-6">DRIFT</div>
+    <div class="w-52 h-1.5 bar-track"><div id="loading-bar" class="bar-fill bg-aether" style="width:0%"></div></div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="menu-overlay" class="fixed inset-0 z-40 hidden flex-col items-center text-ink" style="padding:max(env(safe-area-inset-top),18px) 20px max(env(safe-area-inset-bottom),20px)">
+    <div class="flex-[1]"></div>
+    <div class="menu-ship">
+      <svg width="200" height="108" viewBox="0 0 200 108">
+        <defs>
+          <linearGradient id="hullG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2a3a5e"/><stop offset="1" stop-color="#52689a"/></linearGradient>
+        </defs>
+        <g class="menu-flame">
+          <polygon points="60,46 60,60 6,53" fill="#ff5a47" opacity="0.7"/>
+          <polygon points="60,48 60,58 20,53" fill="#ff9d3c" opacity="0.9"/>
+          <polygon points="60,49 60,57 34,53" fill="#ffcf5a"/>
+        </g>
+        <polygon points="84,38 100,8 112,35" fill="#4fe0d8" opacity="0.5" stroke="#8af7ff" stroke-width="1.5"/>
+        <polygon points="84,68 100,100 112,71" fill="#4fe0d8" opacity="0.5" stroke="#8af7ff" stroke-width="1.5"/>
+        <polygon points="166,53 126,34 74,39 58,53 74,67 126,72" fill="url(#hullG)" stroke="#cdd9f2" stroke-width="2.5"/>
+        <circle cx="68" cy="45" r="7" fill="#cdd9f2"/><circle cx="68" cy="61" r="7" fill="#cdd9f2"/>
+        <circle cx="65" cy="45" r="3.5" fill="#ffcf5a"/><circle cx="65" cy="61" r="3.5" fill="#ffcf5a"/>
+        <circle cx="126" cy="53" r="11" fill="#8af7ff"/><circle cx="130" cy="49" r="4" fill="#fff"/>
+      </svg>
+    </div>
+    <h1 class="font-display font-black text-4xl tracking-[0.18em] mt-4" style="background:linear-gradient(90deg,#4fe0d8,#8af7ff,#ffcf5a);-webkit-background-clip:text;background-clip:text;color:transparent">AETHER DRIFT</h1>
+    <p class="font-body text-sm tracking-[0.35em] text-aether/70 mt-1">COMPACT OPEN SKY</p>
+    <div class="glass rounded-full px-4 py-1.5 mt-5 flex items-center gap-2 text-gold font-mono">
+      <span class="text-lg">◈</span><span id="menu-credits" class="font-bold">0</span><span class="text-xs text-ink/40">CREDITS</span>
+    </div>
+    <div id="menu-medal" class="hidden items-center gap-2 mt-2 glass rounded-full px-3 py-1">
+      <span class="text-lg">🏅</span><span class="font-display font-bold text-sm text-gold">SKY REBORN · VICTOR</span>
+    </div>
+    <div class="flex-[1]"></div>
+    <button id="btn-launch" class="neon-btn w-full max-w-sm py-4 rounded-2xl font-display font-bold text-lg tracking-widest text-skyNight" style="background:linear-gradient(135deg,#4fe0d8,#8af7ff)">SET SAIL</button>
+    <div class="flex gap-3 w-full max-w-sm mt-3">
+      <button id="btn-hangar" class="neon-btn flex-1 py-3 rounded-xl glass font-display font-bold text-sm tracking-wider text-gold flex items-center justify-center gap-2"><span class="w-5 h-5" data-ic="wrench"></span>HANGAR</button>
+      <button id="btn-settings" class="neon-btn w-12 py-3 rounded-xl glass flex items-center justify-center text-ink/70"><span class="w-5 h-5" data-ic="gear"></span></button>
+    </div>
+    <p class="font-body text-[11px] text-ink/40 mt-3 text-center">Drag to fly · mine resources · trade between isles · survive the sky</p>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="fixed inset-0 z-20 hidden pointer-events-none" style="padding:max(env(safe-area-inset-top),14px) 14px max(env(safe-area-inset-bottom),16px)">
+    <div class="absolute left-3 flex flex-col gap-1.5" style="top:max(env(safe-area-inset-top),14px)">
+      <div class="glass rounded-lg px-2 py-1.5 flex items-center gap-2 w-32">
+        <span class="w-4 h-4 text-hpGood flex-none" data-ic="shield"></span>
+        <div class="flex-1 h-2 bar-track"><div id="hp-bar" class="bar-fill" style="width:100%;background:#76e08a"></div></div>
+      </div>
+      <div class="glass rounded-lg px-2 py-1.5 flex items-center gap-2 w-32">
+        <span class="w-4 h-4 text-fuel flex-none" data-ic="fuel"></span>
+        <div class="flex-1 h-2 bar-track"><div id="fuel-bar" class="bar-fill" style="width:100%;background:#ffcf5a"></div></div>
+      </div>
+      <div class="glass rounded-lg px-2 py-1 flex items-center gap-1.5 w-32">
+        <span class="w-3.5 h-3.5 text-ember flex-none" data-ic="heart"></span>
+        <div id="hud-lives" class="flex gap-1"></div>
+      </div>
+      <div id="hud-buffs" class="flex flex-wrap gap-1"></div>
+    </div>
+    <div class="absolute right-3 flex flex-col items-end gap-1.5" style="top:max(env(safe-area-inset-top),14px)">
+      <div class="flex gap-1.5">
+        <button id="btn-map" class="neon-btn pointer-events-auto w-9 h-9 rounded-lg glass flex items-center justify-center text-aether"><span class="w-5 h-5" data-ic="map"></span></button>
+        <button id="btn-pause" class="neon-btn pointer-events-auto w-9 h-9 rounded-lg glass flex items-center justify-center text-ink/80"><span class="w-5 h-5" data-ic="pause"></span></button>
+      </div>
+      <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-gold font-mono text-sm"><span>◈</span><span id="hud-credits" class="font-bold">0</span></div>
+      <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-aether font-mono text-xs"><span class="w-3.5 h-3.5" data-ic="box"></span><span id="hud-cargo">0/90</span></div>
+    </div>
+    <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center" style="top:max(env(safe-area-inset-top),14px)">
+      <div id="radar" class="relative rounded-full glass" style="width:84px;height:84px">
+        <div class="radar-sweep absolute inset-0 rounded-full" style="background:conic-gradient(from 0deg, rgba(79,224,216,0.22), transparent 45deg)"></div>
+        <div class="absolute inset-0 rounded-full border border-aether/20"></div>
+        <div class="absolute left-1/2 top-1/2 w-1.5 h-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink"></div>
+        <div class="absolute left-1/2 top-1 -translate-x-1/2 text-[9px] font-mono text-aether/60">N</div>
+        <div id="radar-blips" class="absolute inset-0"></div>
+      </div>
+      <div id="day-label" class="mt-1 font-mono text-[10px] text-ink/50 tracking-widest">DAY</div>
+    </div>
+
+    <div id="joy-zone" class="absolute pointer-events-auto" style="left:0;right:0;top:72px;bottom:0"></div>
+    <div id="joy-base" class="absolute rounded-full opacity-0" style="left:78px;bottom:96px;width:118px;height:118px;transform:translate(-50%,50%);background:rgba(14,28,58,0.4);border:2px solid rgba(79,224,216,0.3)">
+      <div id="joy-knob" class="absolute left-1/2 top-1/2 rounded-full" style="width:52px;height:52px;transform:translate(-50%,-50%);background:rgba(79,224,216,0.55);box-shadow:0 0 16px rgba(79,224,216,0.5)"></div>
+    </div>
+
+    <div class="absolute flex flex-col items-center gap-3 pointer-events-auto" style="right:24px;bottom:max(env(safe-area-inset-bottom),28px)">
+      <button id="boost-btn" class="neon-btn w-16 h-16 rounded-full glass flex items-center justify-center text-gold border-2 border-gold/50"><span class="w-7 h-7" data-ic="boost"></span></button>
+      <button id="fire-btn" class="neon-btn w-20 h-20 rounded-full flex items-center justify-center text-skyNight border-2 border-ember/60" style="background:radial-gradient(circle at 40% 35%,#ff9d3c,#ff5a47)"><span class="w-8 h-8" data-ic="target"></span></button>
+    </div>
+  </div>
+
+  <!-- event banner -->
+  <div id="event-banner" class="fixed left-1/2 -translate-x-1/2 z-30 hidden pointer-events-none" style="top:30%">
+    <div class="glass rounded-2xl px-6 py-3 text-center border" id="event-card">
+      <div id="event-title" class="font-display font-black text-lg tracking-widest">EVENT</div>
+      <div id="event-desc" class="font-body text-sm text-ink/70 mt-0.5">...</div>
+    </div>
+  </div>
+
+  <!-- minimap panel -->
+  <div id="minimap-panel" class="fixed inset-0 z-30 hidden items-center justify-center p-6" style="background:rgba(4,8,18,0.55)">
+    <div class="glass rounded-3xl p-4 w-full max-w-sm pop-in">
+      <div class="flex items-center justify-between mb-2"><div class="font-display font-bold text-aether tracking-wider">SKY CHART</div>
+        <button id="btn-map-close" class="w-8 h-8 rounded-lg glass flex items-center justify-center text-ink/70"><span class="w-4 h-4" data-ic="x"></span></button></div>
+      <canvas id="minimap-canvas" width="320" height="320" class="w-full rounded-2xl" style="background:rgba(10,18,40,0.8);border:1px solid rgba(79,224,216,0.2)"></canvas>
+      <div id="minimap-legend" class="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px] font-body text-ink/60"></div>
+    </div>
+  </div>
+
+  <!-- planet panel (docked) — container lets touches outside the card reach the joystick -->
+  <div id="planet-panel" class="fixed left-1/2 z-30 hidden w-full max-w-md px-3 pointer-events-none" style="bottom:max(env(safe-area-inset-bottom),18px);transform:translateX(-50%)">
+    <div class="glass rounded-3xl p-4 pop-in pointer-events-auto max-h-[82vh] overflow-y-auto panel-scroll">
+      <div id="planet-content"></div>
+    </div>
+  </div>
+
+  <!-- hangar (upgrades) -->
+  <div id="hangar-panel" class="fixed inset-0 z-40 hidden flex-col p-5 text-ink" style="background:rgba(4,8,18,0.85);padding-top:max(env(safe-area-inset-top),20px);padding-bottom:max(env(safe-area-inset-bottom),20px)">
+    <div class="flex items-center justify-between mb-3">
+      <div class="font-display font-black text-2xl tracking-wider text-aether">HANGAR</div>
+      <div class="glass rounded-full px-3 py-1 font-mono text-gold">◈ <span id="hangar-credits">0</span></div>
+    </div>
+    <div id="hangar-list" class="flex-1 overflow-y-auto panel-scroll flex flex-col gap-2.5"></div>
+    <button id="btn-hangar-close" class="neon-btn mt-3 py-3 rounded-xl glass font-display font-bold tracking-wider text-ink/80">BACK</button>
+  </div>
+
+  <!-- pause -->
+  <div id="pause-panel" class="fixed inset-0 z-40 hidden flex-col items-center justify-center gap-3" style="background:rgba(4,8,18,0.72)">
+    <div class="font-display font-black text-3xl tracking-widest text-aether mb-1">PAUSED</div>
+    <div class="glass rounded-2xl p-4 w-64">
+      <label class="font-body text-sm text-ink/70">Music <span id="music-val-p" class="float-right font-mono text-aether">45%</span></label>
+      <input id="music-vol-p" type="range" min="0" max="100" value="45" class="vol-slider w-full my-2" />
+      <label class="font-body text-sm text-ink/70 mt-2 block">SFX <span id="sfx-val-p" class="float-right font-mono text-aether">80%</span></label>
+      <input id="sfx-vol-p" type="range" min="0" max="100" value="80" class="vol-slider w-full my-2" />
+    </div>
+    <button id="btn-resume" class="neon-btn w-64 py-3 rounded-xl font-display font-bold text-skyNight" style="background:linear-gradient(135deg,#4fe0d8,#8af7ff)">RESUME</button>
+    <button id="btn-pause-menu" class="neon-btn w-64 py-3 rounded-xl glass font-display font-bold text-ink/80">ABANDON SAIL</button>
+  </div>
+
+  <!-- dead overlay (respawn) -->
+  <div id="dead-overlay" class="fixed inset-0 z-40 hidden flex-col items-center justify-center" style="background:rgba(40,8,12,0.5)">
+    <div class="text-5xl mb-2">💥</div>
+    <div class="font-display font-black text-2xl tracking-widest text-ember">HULL LOST</div>
+    <div id="dead-sub" class="font-body text-ink/60 mt-1">Credits lost · recovering…</div>
+  </div>
+
+  <!-- victory -->
+  <div id="win-overlay" class="fixed inset-0 z-40 hidden flex-col items-center justify-center" style="background:rgba(8,20,40,0.85)">
+    <div class="text-6xl mb-2">🏆</div>
+    <div class="font-display font-black text-3xl tracking-widest" style="background:linear-gradient(90deg,#4fe0d8,#ffcf5a);-webkit-background-clip:text;background-clip:text;color:transparent">SKY REBORN</div>
+    <div class="font-body text-ink/70 mt-1">The Heart of the Sky burns bright again.</div>
+  </div>
+
+  <!-- game over (out of lives) -->
+  <div id="gameover-overlay" class="fixed inset-0 z-40 hidden flex-col items-center justify-center" style="background:rgba(20,4,8,0.82)">
+    <div class="text-6xl mb-2">☠️</div>
+    <div class="font-display font-black text-3xl tracking-widest text-ember">GAME OVER</div>
+    <div class="font-body text-ink/70 mt-1">All 6 lives lost · returning to base</div>
+    <div class="font-mono text-gold mt-3">Best ◈ <span id="gameover-best">0</span></div>
+  </div>
+
+  <!-- settings -->
+  <div id="settings-panel" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-6" style="background:rgba(4,8,18,0.8)">
+    <div class="glass rounded-3xl p-5 w-full max-w-sm pop-in">
+      <div class="font-display font-bold text-xl text-aether mb-4">SETTINGS</div>
+      <label class="font-body text-sm text-ink/70">Music <span id="music-val" class="float-right font-mono text-aether">45%</span></label>
+      <input id="music-vol" type="range" min="0" max="100" value="45" class="vol-slider w-full my-2" />
+      <label class="font-body text-sm text-ink/70 mt-3 block">SFX <span id="sfx-val" class="float-right font-mono text-aether">80%</span></label>
+      <input id="sfx-vol" type="range" min="0" max="100" value="80" class="vol-slider w-full my-2" />
+      <button id="btn-reset" class="neon-btn w-full mt-4 py-2.5 rounded-xl glass font-body text-ember/80 text-sm"><span id="reset-label">Reset All Data</span></button>
+      <button id="btn-close-settings" class="neon-btn w-full mt-2 py-2.5 rounded-xl font-display font-bold text-skyNight" style="background:linear-gradient(135deg,#4fe0d8,#8af7ff)">DONE</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none" style="top:96px"></div>
+
+  <style>.vol-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:9999px;background:linear-gradient(to right,#4fe0d8 var(--pct,50%),#0e1c3a var(--pct,50%));outline:none}.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#4fe0d8;border:2px solid #fff}</style>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

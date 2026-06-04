@@ -1,0 +1,21 @@
+- generic [ref=e2]:
+  - generic:
+    - generic:
+      - generic:
+        - generic: "9"
+      - generic:
+        - generic: "8"
+        - generic: sec
+      - generic:
+        - generic:
+          - generic: "1"
+        - button "⏸" [active] [ref=e41] [cursor=pointer]
+    - generic:
+      - button "⚡ Overcharge" [ref=e42] [cursor=pointer]
+      - generic: Swipe stars to send troops
+  - generic [ref=e44]:
+    - paragraph [ref=e45]: PAUSED
+    - heading "Mission Hold" [level=2] [ref=e46]
+    - generic [ref=e47]:
+      - button "▶ Resume" [ref=e48] [cursor=pointer]
+      - button "← Abort Mission" [ref=e49] [cursor=pointer]

@@ -1,0 +1,62 @@
+- generic [ref=e2]:
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Stellar Net" [level=1] [ref=e24]
+        - paragraph [ref=e25]: Constellation RTS · Ultimate Edition
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: "0"
+          - generic [ref=e29]: Victories
+        - generic [ref=e31]:
+          - generic [ref=e32]: "5"
+          - generic [ref=e33]: Stardust ✦
+    - generic [ref=e34]:
+      - button "Launch Campaign" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "✦ Arsenal" [ref=e37] [cursor=pointer]
+        - button "⚙ Settings" [ref=e38] [cursor=pointer]
+    - paragraph [ref=e40]: v1.0 · Procedural Vector Graphics · iOS
+  - generic [ref=e67]:
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - paragraph [ref=e70]: Arsenal
+        - heading "Command Store" [level=2] [ref=e71]
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e74]: ✦
+          - generic [ref=e75]: "5"
+        - button "✕" [ref=e76] [cursor=pointer]
+    - generic [ref=e77]:
+      - button "Tech Tree" [ref=e78] [cursor=pointer]
+      - button "Artifacts" [active] [ref=e79] [cursor=pointer]
+      - button "Cosmetics" [ref=e80] [cursor=pointer]
+    - generic [ref=e81]:
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - generic [ref=e132]: Quantum Lens
+          - generic [ref=e133]: Reveals true troop count in Nebula stars.
+        - button "Buy 50 ✦" [ref=e135] [cursor=pointer]:
+          - generic [ref=e136]: Buy
+          - generic [ref=e137]: 50 ✦
+      - generic [ref=e138]:
+        - generic [ref=e139]:
+          - generic [ref=e140]: Warp Drive
+          - generic [ref=e141]: First troop wave is sent at 2× speed.
+        - button "Buy 75 ✦" [ref=e143] [cursor=pointer]:
+          - generic [ref=e144]: Buy
+          - generic [ref=e145]: 75 ✦
+      - generic [ref=e146]:
+        - generic [ref=e147]:
+          - generic [ref=e148]: Iron Core
+          - generic [ref=e149]: White Dwarf damage reduction increases to 70%.
+        - button "Buy 60 ✦" [ref=e151] [cursor=pointer]:
+          - generic [ref=e152]: Buy
+          - generic [ref=e153]: 60 ✦
+      - generic [ref=e154]:
+        - generic [ref=e155]:
+          - generic [ref=e156]: Time Crystal
+          - generic [ref=e157]: Each match lasts 10 seconds longer.
+        - button "Buy 80 ✦" [ref=e159] [cursor=pointer]:
+          - generic [ref=e160]: Buy
+          - generic [ref=e161]: 80 ✦

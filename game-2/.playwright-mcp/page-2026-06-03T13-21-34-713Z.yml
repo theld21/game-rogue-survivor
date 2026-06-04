@@ -1,0 +1,15 @@
+- generic [ref=e2]:
+  - generic:
+    - generic:
+      - generic:
+        - generic: "1"
+      - generic:
+        - generic: "59"
+        - generic: sec
+      - generic:
+        - generic:
+          - generic: "1"
+        - button "⏸" [ref=e41] [cursor=pointer]
+    - generic:
+      - button "⚡ Overcharge" [ref=e42] [cursor=pointer]
+      - generic: Swipe stars to send troops

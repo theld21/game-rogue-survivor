@@ -1,0 +1,18 @@
+- generic [ref=e21]:
+  - generic [ref=e22]:
+    - generic [ref=e23]:
+      - heading "Stellar Net" [level=1] [ref=e24]
+      - paragraph [ref=e25]: Constellation RTS · Ultimate Edition
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - generic [ref=e28]: "0"
+        - generic [ref=e29]: Victories
+      - generic [ref=e31]:
+        - generic [ref=e32]: "5"
+        - generic [ref=e33]: Stardust ✦
+  - generic [ref=e34]:
+    - button "Launch Campaign" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "✦ Arsenal" [ref=e37] [cursor=pointer]
+      - button "⚙ Settings" [ref=e38] [cursor=pointer]
+  - paragraph [ref=e40]: v1.0 · Procedural Vector Graphics · iOS

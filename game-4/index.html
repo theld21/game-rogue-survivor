@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Sea of Neon: Pirate Raid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@300;400;600;800&family=Pirata+One&family=Be+Vietnam+Pro:ital,wght@0,400;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet" />
+  <script>
+    window.onerror = function (message, source, lineno, colno) {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(251,29,90,0.95);color:#fff;z-index:999999;padding:12px;font:12px monospace;word-break:break-all';
+      div.innerHTML = '<strong>[Runtime Error]</strong> ' + message + '<br><small>at ' + source + ':' + lineno + ':' + colno + '</small>';
+      document.body.appendChild(div);
+      return false;
+    };
+  </script>
+</head>
+<body class="bg-seaDeep text-white select-none antialiased font-body">
+  <div id="game-wrapper" class="relative w-full h-full overflow-hidden">
+    <div id="game-container" class="absolute inset-0 z-0"></div>
+
+    <div id="ui-layer" style="pointer-events:none" class="absolute inset-0 z-10 box-border">
+
+      <!-- ================= LOADING ================= -->
+      <div id="loading-screen" class="absolute inset-0 bg-seaAbyss z-50 flex flex-col items-center justify-center pointer-events-auto">
+        <div class="text-center px-8 max-w-md w-full">
+          <div class="text-6xl mb-3">🏴‍☠️</div>
+          <h1 class="text-4xl tracking-wide text-seaCyan font-pirate text-glow-cyan mb-1">Sea of Neon</h1>
+          <p class="text-xs tracking-[0.3em] text-seaGold font-display uppercase mb-8">Pirate Raid</p>
+          <div class="w-full bg-[#0a1f30] h-2 rounded-full overflow-hidden border border-white/10">
+            <div id="loading-progress" class="bg-gradient-to-r from-seaCyan to-seaGold h-full w-0 transition-all duration-200 shadow-[0_0_10px_#22d3ee]"></div>
+          </div>
+          <p id="loading-status" class="text-[11px] text-slate-400 mt-3 font-display uppercase tracking-widest"></p>
+        </div>
+      </div>
+
+      <!-- ================= MENU ================= -->
+      <div id="menu-overlay" style="display:none;pointer-events:none" class="absolute inset-0 z-30 flex flex-col p-5 pt-[max(env(safe-area-inset-top),20px)] pb-[max(env(safe-area-inset-bottom),20px)]">
+        <!-- Top bar: gold + menu buttons -->
+        <div class="flex items-center justify-between mb-4 mt-2">
+          <div class="bg-[#06182a99] border border-seaGold/30 rounded-xl px-3 py-1.5 flex items-center gap-2 backdrop-blur-md" title="Mặt Trời — dùng nâng cấp">
+            <span class="text-base">☀️</span>
+            <span id="menu-gold" class="text-seaGold font-display font-bold text-sm">0</span>
+          </div>
+          <div class="flex gap-2 pointer-events-auto">
+            <!-- Upgrade shop: shopping cart icon -->
+            <button id="btn-open-upgrade-shop" class="neon-btn bg-[#06182acc] border border-seaGold/40 rounded-xl w-10 h-10 flex items-center justify-center text-seaGold backdrop-blur-md" title="Upgrade Yard">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                <path d="M2 2h2.5l2.6 11.8a2 2 0 0 0 2 1.6H18a2 2 0 0 0 1.9-1.4l1.6-7H5.1"/>
+                <path d="M14 7h4M16 5v4"/>
+              </svg>
+            </button>
+            <!-- Settings button -->
+            <button id="btn-open-settings" class="neon-btn bg-[#06182acc] border border-white/20 rounded-xl w-10 h-10 flex items-center justify-center text-slate-300 backdrop-blur-md" title="Settings">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center mb-4">
+          <h1 class="text-5xl font-pirate text-transparent bg-clip-text bg-gradient-to-r from-seaCyan via-seaTeal to-seaGold">Sea of Neon</h1>
+          <p class="text-xs text-seaGold tracking-[0.3em] font-display uppercase mt-1">Pirate Raid</p>
+          <div class="flex items-center justify-center gap-2 mt-3">
+            <div class="bg-[#06182a66] border border-white/10 rounded-lg px-3 py-1 text-xs font-display text-slate-400">
+              <span id="menu-raids" class="text-seaCyan font-bold">0</span>
+              <span id="menu-raids-label" class="ml-1">Trận</span>
+            </div>
+          </div>
+        </div>
+
+        <p id="menu-select-label" class="text-center text-[11px] text-slate-300 font-display uppercase tracking-widest mb-2">Chọn Hải Trình</p>
+        <div id="level-grid" class="grid grid-cols-2 gap-3 max-w-sm w-full mx-auto pointer-events-auto overflow-y-auto panel-scroll px-1 flex-1"></div>
+
+        <!-- How to play -->
+        <div class="max-w-sm w-full mx-auto mt-3 bg-[#06182a66] border border-white/5 rounded-2xl p-3.5 backdrop-blur-md">
+          <h3 id="how-title" class="text-[11px] font-display text-seaCyan uppercase tracking-wider mb-2 text-glow-cyan">Cách Chơi</h3>
+          <ul id="how-list" class="text-[10px] text-slate-300 space-y-1 font-body">
+            <li id="how-1">🕹️</li>
+            <li id="how-2">💥</li>
+            <li id="how-3">🧰</li>
+            <li id="how-4">🏪</li>
+            <li id="how-5">☠️</li>
+            <li id="how-6">🗺️</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ================= HUD ================= -->
+      <div id="hud" style="display:none" class="absolute inset-0 z-20 pointer-events-none">
+        <!-- top bar -->
+        <div class="absolute top-0 left-0 right-0 flex items-start justify-between p-3 pt-[max(env(safe-area-inset-top),12px)]">
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center gap-2">
+              <div class="bg-[#06182acc] border border-seaCyan/40 rounded-lg px-2.5 py-1 backdrop-blur-md">
+                <span id="hud-level-label" class="text-[9px] text-slate-400 uppercase font-display">Màn</span>
+                <span id="hud-level" class="text-seaCyan font-display font-bold ml-1">1</span>
+              </div>
+              <div class="bg-[#06182acc] border border-seaGold/40 rounded-lg px-2.5 py-1 flex items-center gap-1 backdrop-blur-md">
+                <span>🪙</span><span id="hud-gold" class="text-seaGold font-display font-bold">0</span>
+              </div>
+            </div>
+            <div id="hud-objective" class="bg-[#06182acc] border border-white/10 rounded-lg px-2.5 py-1 text-[11px] text-slate-200 font-body backdrop-blur-md max-w-[220px]">—</div>
+          </div>
+          <button id="btn-pause" class="neon-btn pointer-events-auto bg-[#06182acc] border border-white/20 rounded-lg w-10 h-10 flex items-center justify-center text-white/80 backdrop-blur-md">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          </button>
+        </div>
+
+        <!-- bottom-left ship status -->
+        <div class="absolute left-3 bottom-3 pb-[max(env(safe-area-inset-bottom),8px)] w-44">
+          <div class="flex items-center gap-1.5 mb-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fb1d5a"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402 0-3.791 3.068-5.191 5.281-5.191 1.312 0 4.151.501 5.719 4.457 1.59-3.968 4.464-4.447 5.726-4.447 2.54 0 5.274 1.621 5.274 5.181 0 4.069-5.136 8.625-11 14.402z"/></svg>
+            <div class="flex-1 bg-[#0a1f30] h-3 rounded-full overflow-hidden border border-white/10">
+              <div id="hp-fill" class="h-full w-full bg-gradient-to-r from-seaCrimson via-seaGold to-seaGreen transition-all duration-200"></div>
+            </div>
+            <span id="hp-text" class="text-[10px] font-display text-white/80 w-9 text-right">80</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span id="cargo-text" class="text-[11px] font-display text-seaTeal">0 / 6</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- dock action buttons -->
+      <button id="btn-chest" style="display:none" class="neon-btn pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-7 z-20 bg-gradient-to-b from-seaCyan to-[#0c7c94] border border-white/30 rounded-2xl px-5 py-3 flex items-center gap-2 shadow-neonCyan pop-in">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#020a14" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M19 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="17"/><line x1="9.5" y1="14.5" x2="14.5" y2="14.5"/></svg>
+        <span id="btn-chest-label" class="font-display font-bold text-sm text-seaDeep uppercase tracking-wide">Mở Rương</span>
+      </button>
+      <button id="btn-shop" style="display:none" class="neon-btn pointer-events-auto absolute left-1/2 -translate-x-1/2 bottom-7 z-20 bg-gradient-to-b from-seaGold to-[#a87410] border border-white/30 rounded-2xl px-5 py-3 flex items-center gap-2 shadow-neonGold pop-in">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#020a14" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span id="btn-shop-label" class="font-display font-bold text-sm text-seaDeep uppercase tracking-wide">Vào Bến Cảng</span>
+      </button>
+
+      <!-- ================= CHEST PANEL ================= -->
+      <div id="chest-panel" style="display:none" class="absolute inset-0 z-40 pointer-events-auto bg-[#020a14d0] backdrop-blur-sm flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-[#06182a] border border-seaCyan/40 rounded-3xl p-4 shadow-neonCyan pop-in">
+          <div class="flex items-center justify-between mb-2">
+            <h2 id="chest-title" class="font-pirate text-2xl text-seaCyan text-glow-cyan">Rương Báu</h2>
+            <button id="btn-close-chest" class="neon-btn w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="chest-island-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display">Rương Đảo</span>
+            <span id="chest-spawn" class="text-[10px] text-seaCyan font-display"></span>
+          </div>
+          <div id="chest-slots" class="grid grid-cols-4 gap-2 mb-4"></div>
+          <div class="flex items-center justify-center text-slate-500 text-xs my-1">⇅</div>
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="chest-ship-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display">Khoang Thuyền</span>
+            <span id="chest-cargo-count" class="text-[10px] text-seaTeal font-display"></span>
+          </div>
+          <div id="cargo-slots-chest" class="grid grid-cols-6 gap-1.5 mb-3"></div>
+          <div id="chest-action-bar" style="visibility:hidden" class="flex gap-2">
+            <button id="btn-move" class="neon-btn flex-1 bg-gradient-to-b from-seaCyan to-[#0c7c94] text-seaDeep font-display font-bold text-xs uppercase py-2.5 rounded-xl border border-white/20">Chuyển</button>
+            <button id="btn-discard" class="neon-btn bg-gradient-to-b from-seaCrimson to-[#9c1038] text-white font-display font-bold text-xs uppercase py-2.5 px-3 rounded-xl border border-white/20 flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              <span id="btn-discard-label">Vứt</span>
+            </button>
+          </div>
+          <p id="chest-hint" class="text-center text-[10px] text-slate-500 mt-2">Chạm vào vật phẩm để chọn</p>
+        </div>
+      </div>
+
+      <!-- ================= SHOP PANEL ================= -->
+      <div id="shop-panel" style="display:none" class="absolute inset-0 z-40 pointer-events-auto bg-[#020a14d0] backdrop-blur-sm flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-[#06182a] border border-seaGold/40 rounded-3xl p-4 shadow-neonGold pop-in max-h-[92vh] overflow-y-auto panel-scroll">
+          <div class="flex items-center justify-between mb-3">
+            <h2 id="shop-title" class="font-pirate text-2xl text-seaGold text-glow-gold">Bến Cảng</h2>
+            <button id="btn-close-shop" class="neon-btn w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="flex items-center justify-between bg-[#0a1f30] rounded-xl px-3 py-2 mb-3 border border-white/5">
+            <span id="shop-gold-label" class="text-xs text-slate-300 font-body">Vàng của bạn</span>
+            <span class="flex items-center gap-1 text-seaGold font-display font-bold">🪙 <span id="shop-gold">0</span></span>
+          </div>
+          <!-- repair -->
+          <div class="flex items-center gap-2 bg-[#0a1f30] rounded-xl px-3 py-2.5 mb-3 border border-white/5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <div class="flex-1">
+              <div id="shop-repair-label" class="text-xs text-white font-body">Sửa Thuyền</div>
+              <div class="text-[10px] text-slate-400"><span id="shop-hp-label">Máu</span>: <span id="shop-hp">80</span></div>
+            </div>
+            <button id="btn-repair" class="neon-btn bg-gradient-to-b from-seaGreen to-[#1f7a3f] text-seaDeep font-display font-bold text-xs px-3 py-2 rounded-lg border border-white/20">
+              🪙 <span id="shop-repair-cost">0</span>
+            </button>
+          </div>
+          <!-- sell list -->
+          <div class="flex items-center justify-between mb-1.5">
+            <span id="shop-sell-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display">Bán Chiến Lợi Phẩm</span>
+            <button id="btn-sell-all" class="neon-btn text-[10px] text-seaGold font-display uppercase border border-seaGold/40 rounded-md px-2 py-0.5">Bán Hết</button>
+          </div>
+          <div id="shop-cargo" class="flex flex-col gap-1.5 max-h-40 overflow-y-auto panel-scroll mb-3"></div>
+          <p id="shop-empty" class="text-center text-[11px] text-slate-500 py-2">Khoang thuyền trống.</p>
+          <!-- support items -->
+          <div class="border-t border-white/5 pt-3 mt-1">
+            <p id="shop-support-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display mb-2">Mua Trang Bị (theo màn)</p>
+            <div id="shop-support-list" class="flex flex-col gap-1.5"></div>
+          </div>
+
+          <!-- ship stats -->
+          <div class="border-t border-white/5 pt-3 mt-2">
+            <p id="shop-stats-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display mb-2">Thông Số Thuyền</p>
+            <div id="shop-stats" class="grid grid-cols-2 gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PAUSE ================= -->
+      <div id="pause-panel" style="display:none" class="absolute inset-0 z-40 pointer-events-auto bg-[#020a14e0] backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <h2 id="pause-title" class="font-pirate text-4xl text-seaCyan text-glow-cyan mb-8">Tạm Dừng</h2>
+        <div class="flex flex-col gap-3 w-full max-w-xs">
+          <button id="btn-resume" class="neon-btn bg-gradient-to-b from-seaCyan to-[#0c7c94] text-seaDeep font-display font-bold uppercase py-3 rounded-xl border border-white/20 flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span id="pause-resume-label">Tiếp Tục</span>
+          </button>
+          <button id="btn-restart" class="neon-btn bg-white/10 border border-white/20 text-white font-display font-bold uppercase py-3 rounded-xl flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+            <span id="pause-restart-label">Chơi Lại Màn</span>
+          </button>
+          <button id="btn-quit" class="neon-btn bg-white/10 border border-seaCrimson/40 text-seaCrimson font-display font-bold uppercase py-3 rounded-xl flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span id="pause-quit-label">Về Menu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= RESULT ================= -->
+      <div id="result-panel" style="display:none" class="absolute inset-0 z-40 pointer-events-auto bg-[#020a14e6] backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+        <div id="result-emoji" class="text-7xl mb-3">🏆</div>
+        <h2 id="result-title" class="font-pirate text-4xl mb-2">Chiến Thắng!</h2>
+        <p id="result-desc" class="text-sm text-slate-300 mb-8 font-body max-w-xs"></p>
+        <div class="flex flex-col gap-3 w-full max-w-xs">
+          <button id="btn-result-next" class="neon-btn bg-gradient-to-b from-seaGold to-[#a87410] text-seaDeep font-display font-bold uppercase py-3 rounded-xl border border-white/20 flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <span id="result-next-label">Màn Tiếp Theo</span>
+          </button>
+          <button id="btn-result-retry" class="neon-btn bg-white/10 border border-white/20 text-white font-display font-bold uppercase py-3 rounded-xl flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.84"/></svg>
+            <span id="result-retry-label">Chơi Lại</span>
+          </button>
+          <button id="btn-result-menu" class="neon-btn bg-white/10 border border-seaCyan/40 text-seaCyan font-display font-bold uppercase py-3 rounded-xl flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <span id="result-menu-label">Về Menu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= SETTINGS PANEL ================= -->
+      <div id="settings-panel" style="display:none" class="absolute inset-0 z-50 pointer-events-auto bg-[#020a14e8] backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-[#06182a] border border-white/20 rounded-3xl p-5 pop-in">
+          <div class="flex items-center justify-between mb-5">
+            <h2 id="settings-title" class="font-display font-bold text-xl text-seaCyan text-glow-cyan">Cài Đặt</h2>
+            <button id="btn-close-settings" class="neon-btn w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <!-- Language -->
+          <div class="mb-5">
+            <p id="settings-lang-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display mb-2">Ngôn Ngữ</p>
+            <div class="flex gap-2">
+              <button id="btn-lang-vi" class="neon-btn flex-1 py-2.5 rounded-xl font-display font-bold text-sm border-2 border-seaCyan text-seaCyan">🇻🇳 Tiếng Việt</button>
+              <button id="btn-lang-en" class="neon-btn flex-1 py-2.5 rounded-xl font-display font-bold text-sm border-2 border-white/20 text-slate-400">🇬🇧 English</button>
+            </div>
+          </div>
+
+          <!-- Music volume -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <p id="settings-music-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display">Âm Nhạc</p>
+              <span id="music-vol-val" class="text-xs font-display text-seaCyan">55%</span>
+            </div>
+            <input id="music-vol" type="range" min="0" max="100" value="55"
+              class="vol-slider w-full h-2 rounded-full appearance-none cursor-pointer" />
+          </div>
+
+          <!-- SFX volume -->
+          <div class="mb-5">
+            <div class="flex items-center justify-between mb-2">
+              <p id="settings-sfx-label" class="text-[10px] uppercase tracking-widest text-slate-400 font-display">Hiệu Ứng</p>
+              <span id="sfx-vol-val" class="text-xs font-display text-seaCyan">85%</span>
+            </div>
+            <input id="sfx-vol" type="range" min="0" max="100" value="85"
+              class="vol-slider w-full h-2 rounded-full appearance-none cursor-pointer" />
+          </div>
+
+          <!-- Reset -->
+          <button id="btn-reset-data" class="neon-btn w-full border border-seaCrimson/40 text-seaCrimson font-display font-bold text-sm py-2.5 rounded-xl">
+            <span id="settings-reset-label">Xóa Toàn Bộ Dữ Liệu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= UPGRADE SHOP PANEL ================= -->
+      <div id="upgrade-shop-panel" style="display:none" class="absolute inset-0 z-50 pointer-events-auto bg-[#020a14e8] backdrop-blur-md flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-[#06182a] border border-seaGold/40 rounded-3xl p-5 shadow-neonGold pop-in">
+          <div class="flex items-center justify-between mb-2">
+            <h2 id="upgrade-title" class="font-display font-bold text-xl text-seaGold text-glow-gold">Xưởng Nâng Cấp</h2>
+            <button id="btn-close-upgrade-shop" class="neon-btn w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <p id="upgrade-desc" class="text-[10px] text-slate-400 mb-4 font-body">Nâng cấp vĩnh viễn trước khi xuất chinh.</p>
+
+          <div class="flex items-center justify-between bg-[#0a1f30] rounded-xl px-3 py-2 mb-4 border border-white/5">
+            <span class="text-xs text-slate-300 font-body">Mặt Trời</span>
+            <span class="flex items-center gap-1 text-seaGold font-display font-bold">☀️ <span id="upgrade-gold">0</span></span>
+          </div>
+
+          <!-- Speed upgrade -->
+          <div class="upgrade-row mb-3 bg-[#0a1f30] rounded-xl px-3 py-2.5 border border-white/5">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p id="upg-speed-name" class="text-xs text-white font-body">Tốc Độ Thuyền</p>
+                <div class="flex gap-1 mt-1" id="upg-speed-dots"></div>
+                <p id="upg-speed-bonus" class="text-[10px] text-seaCyan mt-1"></p>
+              </div>
+              <button id="btn-upg-speed" class="neon-btn bg-gradient-to-b from-seaCyan to-[#0c7c94] text-seaDeep font-display font-bold text-xs px-3 py-2 rounded-lg border border-white/20 ml-3 min-w-[80px]">—</button>
+            </div>
+          </div>
+
+          <!-- FireRate upgrade -->
+          <div class="upgrade-row mb-3 bg-[#0a1f30] rounded-xl px-3 py-2.5 border border-white/5">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p id="upg-fire-name" class="text-xs text-white font-body">Tốc Độ Bắn</p>
+                <div class="flex gap-1 mt-1" id="upg-fire-dots"></div>
+                <p id="upg-fire-bonus" class="text-[10px] text-seaCyan mt-1"></p>
+              </div>
+              <button id="btn-upg-fire" class="neon-btn bg-gradient-to-b from-seaGold to-[#a87410] text-seaDeep font-display font-bold text-xs px-3 py-2 rounded-lg border border-white/20 ml-3 min-w-[80px]">—</button>
+            </div>
+          </div>
+
+          <!-- HP upgrade -->
+          <div class="upgrade-row mb-1 bg-[#0a1f30] rounded-xl px-3 py-2.5 border border-white/5">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p id="upg-hp-name" class="text-xs text-white font-body">Thanh Máu</p>
+                <div class="flex gap-1 mt-1" id="upg-hp-dots"></div>
+                <p id="upg-hp-bonus" class="text-[10px] text-seaGreen mt-1"></p>
+              </div>
+              <button id="btn-upg-hp" class="neon-btn bg-gradient-to-b from-seaGreen to-[#1f7a3f] text-seaDeep font-display font-bold text-xs px-3 py-2 rounded-lg border border-white/20 ml-3 min-w-[80px]">—</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- level intro banner -->
+      <div id="level-banner" style="display:none" class="absolute inset-0 z-30 flex flex-col items-center justify-center pointer-events-none">
+        <div class="text-center bg-[#010912cc] backdrop-blur-md rounded-3xl px-10 py-6 border border-seaCyan/25 shadow-[0_0_40px_rgba(34,211,238,0.12)]">
+          <p id="banner-voyage-label" class="text-[10px] text-seaGold uppercase tracking-[0.35em] font-display">Hải Trình</p>
+          <h2 id="banner-name" class="font-pirate text-5xl text-seaCyan text-glow-cyan mt-2 leading-tight"></h2>
+          <div class="w-16 h-px bg-gradient-to-r from-transparent via-seaCyan/60 to-transparent mx-auto mt-3 mb-2"></div>
+          <p id="banner-sub" class="text-xs text-slate-400 font-display uppercase tracking-[0.2em] mt-1"></p>
+        </div>
+      </div>
+
+      <!-- toasts -->
+      <div id="toast-container" class="absolute top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

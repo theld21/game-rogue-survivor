@@ -1,0 +1,62 @@
+- generic [ref=e2]:
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - heading "Stellar Net" [level=1] [ref=e24]
+        - paragraph [ref=e25]: Constellation RTS · Ultimate Edition
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: "0"
+          - generic [ref=e29]: Victories
+        - generic [ref=e31]:
+          - generic [ref=e32]: "5"
+          - generic [ref=e33]: Stardust ✦
+    - generic [ref=e34]:
+      - button "Launch Campaign" [ref=e35] [cursor=pointer]
+      - generic [ref=e36]:
+        - button "✦ Arsenal" [active] [ref=e37] [cursor=pointer]
+        - button "⚙ Settings" [ref=e38] [cursor=pointer]
+    - paragraph [ref=e40]: v1.0 · Procedural Vector Graphics · iOS
+  - generic [ref=e67]:
+    - generic [ref=e68]:
+      - generic [ref=e69]:
+        - paragraph [ref=e70]: Arsenal
+        - heading "Command Store" [level=2] [ref=e71]
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - generic [ref=e74]: ✦
+          - generic [ref=e75]: "5"
+        - button "✕" [ref=e76] [cursor=pointer]
+    - generic [ref=e77]:
+      - button "Tech Tree" [ref=e78] [cursor=pointer]
+      - button "Artifacts" [ref=e79] [cursor=pointer]
+      - button "Cosmetics" [ref=e80] [cursor=pointer]
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]: Gravity Damper
+          - generic [ref=e85]: Reduces black hole pull radius by 20px per level.
+        - button "Upgrade 30 ✦" [ref=e91] [cursor=pointer]:
+          - generic [ref=e92]: Upgrade
+          - generic [ref=e93]: 30 ✦
+      - generic [ref=e94]:
+        - generic [ref=e95]:
+          - generic [ref=e96]: Warp Engine
+          - generic [ref=e97]: Increases troop travel speed by 15% per level.
+        - button "Upgrade 25 ✦" [ref=e103] [cursor=pointer]:
+          - generic [ref=e104]: Upgrade
+          - generic [ref=e105]: 25 ✦
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - generic [ref=e108]: Stellar Ignition
+          - generic [ref=e109]: Increases Supernova blast radius by 20px per level.
+        - button "Upgrade 35 ✦" [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]: Upgrade
+          - generic [ref=e117]: 35 ✦
+      - generic [ref=e118]:
+        - generic [ref=e119]:
+          - generic [ref=e120]: Pulse Suppressor
+          - generic [ref=e121]: Adds 1.5s to Pulsar shockwave interval per level.
+        - button "Upgrade 40 ✦" [ref=e127] [cursor=pointer]:
+          - generic [ref=e128]: Upgrade
+          - generic [ref=e129]: 40 ✦
