@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body { position: fixed; width: 100%; height: 100%; overflow: hidden; margin: 0; padding: 0; background-color: #01080f; -webkit-tap-highlight-color: transparent; touch-action: none; user-select: none; -webkit-user-select: none; }
+#game-container canvas { display: block; }
+
+.font-display { font-family: 'Orbitron', sans-serif; }
+.font-body { font-family: 'Rajdhani', sans-serif; }
+.font-mono { font-family: 'Share Tech Mono', monospace; }
+
+.glass { background: rgba(8, 26, 44, 0.62); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(70,232,255,0.12); }
+
+.neon-btn { background-clip: padding-box; -webkit-background-clip: padding-box; transition: transform 0.1s ease, filter 0.1s ease; }
+.neon-btn:active { transform: scale(0.94); filter: brightness(1.25); }
+
+.bar-track { background: rgba(255,255,255,0.08); border-radius: 9999px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 9999px; transition: width 0.18s ease; }
+
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.panel-scroll::-webkit-scrollbar { width: 4px; }
+.panel-scroll::-webkit-scrollbar-thumb { background: rgba(70,232,255,0.4); border-radius: 4px; }
+
+@keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.pop-in { animation: popIn 0.26s ease forwards; }
+
+@keyframes subFloat { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+.menu-sub { animation: subFloat 3.2s ease-in-out infinite; filter: drop-shadow(0 0 18px rgba(70,232,255,0.4)); }
+
+.act-btn { transition: transform 0.1s ease, filter 0.1s ease, opacity 0.12s ease, box-shadow 0.12s ease, background 0.12s ease; }
+.act-btn:active { transform: scale(0.92); filter: brightness(1.25); }
+/* utility buttons dim by default, brighten when pressed/active */
+.util-btn { opacity: 0.45; }
+.util-btn.pressed { opacity: 1; box-shadow: 0 0 16px currentColor; }
+/* light ON = fully filled with its colour */
+#light-btn.light-active { opacity: 1; background: #ffc24a; color: #041d30; border-color: #ffc24a; box-shadow: 0 0 18px rgba(255,201,74,0.7); }
+
+.station-tab { background: rgba(8,26,44,0.5); color: rgba(207,226,242,0.5); border: 1px solid rgba(70,232,255,0.15); }
+.station-tab.active { background: rgba(70,232,255,0.16); color: #aaf6ff; border-color: rgba(70,232,255,0.6); }

@@ -167,3 +167,14 @@ Pattern 2 tiền tệ hiệu quả (game-4/5):
 - **Reserved Container fields lại cắn:** `data` (DataManager!) → đổi `info`; `state` → `aiState`; field `body` → `hullGfx` + `declare body`. (Bổ sung §2.)
 - **Day/night = 1 Rectangle/overlay scrollFactor 0**, màu+alpha lerp qua keyframe, drive bằng GSAP proxy `{t}` repeat:-1 onUpdate. `isNight` bật headlight cone + dày sương đảo tối.
 - **HUD DOM ↔ scene qua EventBus** y như cũ: joystick/fire/mine/trade = INTENT lên scene; hud/radar/minimap/dock = STATE xuống DOM. Joystick: base động tại điểm chạm trong `#joy-zone`, `setPointerCapture`, emit `{x,y,mag normalized}`.
+
+## 12. Bóng tối / đèn pha / sonar bằng RenderTexture erase (game-9 Abyss Descent)
+
+- **"Fog of darkness" + khoét lỗ ánh sáng = 1 RenderTexture màn hình, erase mỗi frame.** RT `setScrollFactor(0)` depth cao (trên entity, dưới HUD DOM). Mỗi frame: `rt.clear()` → `rt.fill(color, alpha)` (alpha theo độ sâu) → `rt.erase(stamp)` cho mỗi nguồn sáng. Lỗ erase (alpha 0) để lộ world bên dưới. Entity trong tối vẫn vẽ nhưng bị RT che → vô hình (không cần show/hide per-entity cho darkness; chỉ cull cho perf).
+- **Erase nhận transform của GameObject stamp.** Dùng `make.image({key, add:false})` (KHÔNG add vào display list) làm "con dấu": set `position/rotation/scale/alpha` rồi `rt.erase(stamp)` — cone đèn pha xoay theo heading, glow tròn cho sonar/pocket. Cone = texture bake gradient mềm per-pixel (apex origin ví dụ 0.06,0.5). Scale = realRange / bakedRef.
+- **Tọa độ erase = SCREEN space** (RT scrollFactor 0): `sx = worldX - cam.scrollX`. Đừng quên trừ scroll.
+- **Vòng sonar pulse phải vẽ TRÊN lớp tối** (Graphics depth > RT) mới thấy; còn "reveal" = erase 1 glow disc bán kính lớn dần, alpha fade theo revealMs.
+- **`isLit(x,y)` tính ANALYTIC** (không đọc pixel RT): trong cone nếu `dist<range && |wrap(atan2-heading)|<halfAngle`; hoặc trong 1 ping disc còn hạn. Dùng cho AI (quái sợ/thích sáng) + test reveal.
+- **AI theo ánh sáng/âm thanh = tham số hóa context** truyền vào `creature.update(dt, {lightOn, litByCone, ping, ...})`: loài sợ sáng flee khi litByCone, loài thích sáng charge khi lightOn, loài săn âm lao tới `ping.{x,y}` (đặt target khi `ping.t` đổi). Rất gọn, dễ thêm loài.
+- **Sub spawn PHẢI ngoài vùng dock** (surface base) nếu dock = auto-sell/mở shop, nếu không nó tự mở panel ngay khi vào game. Spawn dưới mép dock zone.
+- **Buoyancy + drag lớn cho "cảm giác nước"**: body drag cao + 1 lực nổi nhẹ thường trực (phải thrust xuống mới lặn). Nhưng đừng để quá ì — maxSpeed/accel đủ cao để xuống sâu không grind (đã chỉnh accel 560/maxSpeed 320/drag 440/buoy -34).

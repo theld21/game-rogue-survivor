@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Abyss Descent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-abyss">
+  <div id="game-container" class="fixed inset-0"></div>
+
+  <!-- Loading -->
+  <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center" style="background:#041d30">
+    <div class="font-display font-black text-3xl tracking-[0.3em] text-sonar mb-1">ABYSS</div>
+    <div class="font-display font-bold text-lg tracking-[0.5em] text-sonarHot mb-6">DESCENT</div>
+    <div class="w-52 h-1.5 bar-track"><div id="loading-bar" class="bar-fill" style="width:0%;background:#46e8ff"></div></div>
+  </div>
+
+  <!-- ============ MENU ============ -->
+  <div id="menu-overlay" class="fixed inset-0 z-40 hidden flex-col items-center text-ink" style="padding:max(env(safe-area-inset-top),18px) 20px max(env(safe-area-inset-bottom),20px)">
+    <div class="flex-[1]"></div>
+    <div class="menu-sub">
+      <svg width="220" height="130" viewBox="0 0 220 130">
+        <ellipse cx="110" cy="68" rx="80" ry="46" fill="#8af7ff" opacity="0.08"/>
+        <!-- tail thruster ring -->
+        <circle cx="40" cy="66" r="19" fill="#223349"/><circle cx="40" cy="66" r="19" fill="none" stroke="#8ff0ff" stroke-width="3" opacity="0.7"/><circle cx="40" cy="66" r="9" fill="#0c1620"/>
+        <!-- swept tail stabilisers -->
+        <polygon points="62,52 40,30 78,48" fill="#33485e"/><polygon points="62,84 40,106 78,88" fill="#33485e"/>
+        <!-- sensor mast -->
+        <line x1="92" y1="28" x2="92" y2="10" stroke="#33485e" stroke-width="3"/><circle cx="92" cy="9" r="3.5" fill="#ffc24a"/>
+        <!-- rounded steel hull -->
+        <ellipse cx="104" cy="70" rx="64" ry="54" fill="#4a5e7a"/>
+        <ellipse cx="104" cy="63" rx="62" ry="49" fill="#d8e4f0"/>
+        <ellipse cx="94" cy="44" rx="42" ry="15" fill="#eef5ff"/>
+        <rect x="80" y="60" width="34" height="6" rx="3" fill="#8ff0ff" opacity="0.85"/>
+        <!-- big glass cockpit dome -->
+        <circle cx="150" cy="64" r="32" fill="#0a1620"/><circle cx="150" cy="64" r="27" fill="#8ff0ff"/><circle cx="160" cy="74" r="16" fill="#16384a" opacity="0.5"/><ellipse cx="140" cy="52" rx="9" ry="5" fill="#fff" opacity="0.85"/>
+        <!-- headlights -->
+        <circle cx="138" cy="100" r="8" fill="#2a3a52"/><circle cx="138" cy="100" r="4.5" fill="#ffe9a8"/>
+        <circle cx="106" cy="106" r="7" fill="#2a3a52"/><circle cx="106" cy="106" r="4" fill="#ffe9a8"/>
+      </svg>
+    </div>
+    <h1 class="font-display font-black text-4xl tracking-[0.16em] mt-4" style="background:linear-gradient(90deg,#46e8ff,#57f0d0,#aaf6ff);-webkit-background-clip:text;background-clip:text;color:transparent">ABYSS DESCENT</h1>
+    <p class="font-body text-sm tracking-[0.32em] text-sonar/70 mt-1">DEEP-SEA SURVIVAL</p>
+    <div class="flex gap-2 mt-5">
+      <div class="glass rounded-full px-4 py-1.5 flex items-center gap-2 text-warn font-mono"><span class="text-lg">◈</span><span id="menu-credits" class="font-bold">0</span></div>
+      <div class="glass rounded-full px-4 py-1.5 flex items-center gap-2 text-sonar font-mono text-sm"><span class="w-4 h-4" data-ic="depth"></span><span id="menu-deepest">0</span>m</div>
+    </div>
+    <div class="flex-[1]"></div>
+    <button id="btn-dive" class="neon-btn w-full max-w-sm py-4 rounded-2xl font-display font-bold text-lg tracking-widest" style="background:linear-gradient(135deg,#46e8ff,#57f0d0);color:#041d30">DESCEND</button>
+    <div class="flex gap-3 w-full max-w-sm mt-3">
+      <button id="btn-base" class="neon-btn flex-1 py-3 rounded-xl glass font-display font-bold text-sm tracking-wider text-sonar flex items-center justify-center gap-2"><span class="w-5 h-5" data-ic="wrench"></span>UPGRADE BAY</button>
+      <button id="btn-settings" class="neon-btn w-12 py-3 rounded-xl glass flex items-center justify-center text-ink/70"><span class="w-5 h-5" data-ic="gear"></span></button>
+    </div>
+    <p class="font-body text-[11px] text-ink/40 mt-3 text-center">Joystick to dive · Sonar to see · mind your O₂, battery &amp; the dark</p>
+  </div>
+
+  <!-- ============ HUD ============ -->
+  <div id="hud" class="fixed inset-0 z-20 hidden pointer-events-none" style="padding:max(env(safe-area-inset-top),14px) 14px max(env(safe-area-inset-bottom),16px)">
+    <!-- left gauges -->
+    <div class="absolute left-3 flex flex-col gap-1.5" style="top:max(env(safe-area-inset-top),14px)">
+      <div class="glass rounded-lg px-2 py-1 flex items-center gap-2 w-36">
+        <span class="w-4 h-4 text-hpGood flex-none" data-ic="hull"></span>
+        <div class="flex-1 h-2 bar-track"><div id="hull-bar" class="bar-fill" style="width:100%;background:#76e08a"></div></div>
+      </div>
+      <div class="glass rounded-lg px-2 py-1 flex items-center gap-2 w-36">
+        <span class="w-4 h-4 text-sonar flex-none" data-ic="oxygen"></span>
+        <div class="flex-1 h-2 bar-track"><div id="oxygen-bar" class="bar-fill" style="width:100%;background:#46e8ff"></div></div>
+      </div>
+      <div class="glass rounded-lg px-2 py-1 flex items-center gap-2 w-36">
+        <span class="w-4 h-4 text-warn flex-none" data-ic="battery"></span>
+        <div class="flex-1 h-2 bar-track"><div id="battery-bar" class="bar-fill" style="width:100%;background:#ffc24a"></div></div>
+      </div>
+    </div>
+    <!-- right: depth + zone + cargo -->
+    <div class="absolute right-3 flex flex-col items-end gap-1.5" style="top:max(env(safe-area-inset-top),14px)">
+      <button id="btn-pause" class="neon-btn pointer-events-auto w-9 h-9 rounded-lg glass flex items-center justify-center text-ink/80"><span class="w-5 h-5" data-ic="pause"></span></button>
+      <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-sonar font-mono text-sm"><span class="w-3.5 h-3.5" data-ic="depth"></span><span id="hud-depth">0</span>m</div>
+      <div id="hud-zone" class="glass rounded-lg px-2.5 py-1 font-body text-[11px] text-sonarHot tracking-wide">SUNLIT SHALLOWS</div>
+      <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-crystal font-mono text-xs"><span class="w-3.5 h-3.5" data-ic="box"></span><span id="hud-cargo">0/30</span></div>
+      <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-warn font-mono text-xs"><span>◈</span><span id="hud-credits">0</span></div>
+    </div>
+    <!-- crush warning -->
+    <div id="crush-warn" class="absolute left-1/2 -translate-x-1/2 hidden" style="top:84px">
+      <div class="glass rounded-full px-4 py-1.5 font-display font-bold text-sm tracking-widest text-danger" style="border:1px solid #ff4a5a">⚠ HULL CRUSHING</div>
+    </div>
+
+    <!-- joystick (whole bottom area) -->
+    <div id="joy-zone" class="absolute pointer-events-auto" style="left:0;right:0;top:64px;bottom:0"></div>
+    <div id="joy-base" class="absolute rounded-full opacity-0" style="left:78px;bottom:96px;width:118px;height:118px;transform:translate(-50%,50%);background:rgba(14,28,58,0.4);border:2px solid rgba(70,232,255,0.3)">
+      <div id="joy-knob" class="absolute left-1/2 top-1/2 rounded-full" style="width:52px;height:52px;transform:translate(-50%,-50%);background:rgba(70,232,255,0.5);box-shadow:0 0 16px rgba(70,232,255,0.5)"></div>
+    </div>
+
+    <!-- all action buttons on the right: claw + laser (main), sonar + light (utility, dimmed) -->
+    <div class="absolute flex flex-col items-center gap-2.5 pointer-events-auto" style="right:22px;bottom:max(env(safe-area-inset-bottom),24px)">
+      <button id="claw-btn" class="act-btn rounded-full glass flex items-center justify-center text-crystal border-2 border-crystal/50" style="width:60px;height:60px"><span class="w-7 h-7" data-ic="claw"></span></button>
+      <button id="fire-btn" class="act-btn rounded-full flex items-center justify-center border-2 border-danger/60" style="width:74px;height:74px;background:radial-gradient(circle at 40% 35%,#ff7a3c,#ff4a5a);color:#041d30"><span class="w-9 h-9" data-ic="laser"></span></button>
+      <div class="flex gap-2.5">
+        <button id="sonar-btn" class="act-btn util-btn rounded-full glass flex items-center justify-center text-sonar border-2 border-sonar/40" style="width:50px;height:50px"><span class="w-6 h-6" data-ic="sonar"></span></button>
+        <button id="light-btn" class="act-btn util-btn rounded-full glass flex items-center justify-center text-warn border-2 border-warn/50" style="width:50px;height:50px"><span class="w-6 h-6" data-ic="light"></span></button>
+      </div>
+    </div>
+
+    <!-- objective chip -->
+    <div class="absolute left-1/2 -translate-x-1/2 pointer-events-none" style="top:max(env(safe-area-inset-top),14px)">
+      <div id="obj-chip" class="glass rounded-full px-3 py-1 flex items-center gap-2 text-[11px] font-body">
+        <span class="w-3.5 h-3.5 text-crystal" data-ic="rocket"></span><span id="obj-text" class="text-ink">Repair the ship</span>
+      </div>
+    </div>
+    <!-- station prompt (appears near base) — wrapper centres it so the button's press-scale can't shift it -->
+    <div id="station-wrap" class="absolute left-1/2 hidden" style="top:96px;transform:translateX(-50%)">
+      <button id="station-btn" class="pointer-events-auto neon-btn glass rounded-2xl px-5 py-2.5 font-display font-bold tracking-wider text-sonar border" style="border-color:#46e8ff">◉ ENTER STATION</button>
+    </div>
+  </div>
+
+  <!-- event/info banner -->
+  <div id="event-banner" class="fixed left-1/2 -translate-x-1/2 z-30 hidden pointer-events-none" style="top:30%">
+    <div class="glass rounded-2xl px-6 py-3 text-center border" id="event-card">
+      <div id="event-title" class="font-display font-black text-lg tracking-widest">—</div>
+      <div id="event-desc" class="font-body text-sm text-ink/70 mt-0.5">—</div>
+    </div>
+  </div>
+
+  <!-- station: repair + sell + upgrades (X to close) -->
+  <div id="base-panel" class="fixed inset-0 z-40 hidden flex-col p-4 text-ink" style="background:rgba(2,12,22,0.92);padding-top:max(env(safe-area-inset-top),16px);padding-bottom:max(env(safe-area-inset-bottom),16px)">
+    <div class="flex items-center justify-between mb-2">
+      <div class="font-display font-black text-2xl tracking-wider text-sonar">STATION</div>
+      <div class="flex items-center gap-2">
+        <div class="glass rounded-full px-3 py-1 font-mono text-warn">◈ <span id="base-credits">0</span></div>
+        <button id="btn-base-close" class="neon-btn w-9 h-9 rounded-lg glass flex items-center justify-center text-ink/80"><span class="w-5 h-5" data-ic="x"></span></button>
+      </div>
+    </div>
+    <div class="flex gap-2 mb-2">
+      <button id="tab-repair" class="station-tab flex-1 py-2 rounded-xl font-display font-bold text-sm">REPAIR SHIP</button>
+      <button id="tab-upgrade" class="station-tab flex-1 py-2 rounded-xl font-display font-bold text-sm">UPGRADES</button>
+    </div>
+    <div id="repair-view" class="flex-1 overflow-y-auto panel-scroll flex flex-col gap-2"></div>
+    <div id="upgrade-view" class="flex-1 overflow-y-auto panel-scroll flex flex-col gap-2.5 hidden"></div>
+    <button id="btn-sell" class="neon-btn mt-2 py-2.5 rounded-xl glass font-display font-bold tracking-wider text-warn">SELL CARGO → CREDITS</button>
+  </div>
+
+  <!-- victory -->
+  <div id="win-overlay" class="fixed inset-0 z-40 hidden flex-col items-center justify-center" style="background:rgba(2,16,30,0.86)">
+    <div class="text-6xl mb-2">🚀</div>
+    <div class="font-display font-black text-3xl tracking-widest" style="background:linear-gradient(90deg,#46e8ff,#57f0d0,#ffe9a8);-webkit-background-clip:text;background-clip:text;color:transparent">LIFTOFF</div>
+    <div class="font-body text-ink/70 mt-1">The ship is whole again — you rise from the abyss.</div>
+  </div>
+
+  <!-- pause -->
+  <div id="pause-panel" class="fixed inset-0 z-40 hidden flex-col items-center justify-center gap-3" style="background:rgba(2,12,22,0.74)">
+    <div class="font-display font-black text-3xl tracking-widest text-sonar mb-1">PAUSED</div>
+    <div class="glass rounded-2xl p-4 w-64">
+      <label class="font-body text-sm text-ink/70">Music <span id="music-val-p" class="float-right font-mono text-sonar">40%</span></label>
+      <input id="music-vol-p" type="range" min="0" max="100" value="40" class="vol-slider w-full my-2" />
+      <label class="font-body text-sm text-ink/70 mt-2 block">SFX <span id="sfx-val-p" class="float-right font-mono text-sonar">80%</span></label>
+      <input id="sfx-vol-p" type="range" min="0" max="100" value="80" class="vol-slider w-full my-2" />
+    </div>
+    <button id="btn-resume" class="neon-btn w-64 py-3 rounded-xl font-display font-bold" style="background:linear-gradient(135deg,#46e8ff,#57f0d0);color:#041d30">RESUME</button>
+    <button id="btn-pause-menu" class="neon-btn w-64 py-3 rounded-xl glass font-display font-bold text-ink/80">SURFACE &amp; QUIT</button>
+  </div>
+
+  <!-- dead -->
+  <div id="dead-overlay" class="fixed inset-0 z-40 hidden flex-col items-center justify-center" style="background:rgba(20,4,8,0.6)">
+    <div class="text-5xl mb-2">🫧</div>
+    <div class="font-display font-black text-2xl tracking-widest text-danger" id="dead-title">SUB LOST</div>
+    <div id="dead-sub" class="font-body text-ink/60 mt-1">Recovering to the surface…</div>
+  </div>
+
+  <!-- settings -->
+  <div id="settings-panel" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-6" style="background:rgba(2,12,22,0.85)">
+    <div class="glass rounded-3xl p-5 w-full max-w-sm pop-in">
+      <div class="font-display font-bold text-xl text-sonar mb-4">SETTINGS</div>
+      <label class="font-body text-sm text-ink/70">Music <span id="music-val" class="float-right font-mono text-sonar">40%</span></label>
+      <input id="music-vol" type="range" min="0" max="100" value="40" class="vol-slider w-full my-2" />
+      <label class="font-body text-sm text-ink/70 mt-3 block">SFX <span id="sfx-val" class="float-right font-mono text-sonar">80%</span></label>
+      <input id="sfx-vol" type="range" min="0" max="100" value="80" class="vol-slider w-full my-2" />
+      <button id="btn-reset" class="neon-btn w-full mt-4 py-2.5 rounded-xl glass font-body text-danger/80 text-sm"><span id="reset-label">Reset All Data</span></button>
+      <button id="btn-close-settings" class="neon-btn w-full mt-2 py-2.5 rounded-xl font-display font-bold" style="background:linear-gradient(135deg,#46e8ff,#57f0d0);color:#041d30">DONE</button>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none" style="top:120px"></div>
+
+  <style>.vol-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:9999px;background:linear-gradient(to right,#46e8ff var(--pct,50%),#0e1c3a var(--pct,50%));outline:none}.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#46e8ff;border:2px solid #fff}</style>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
