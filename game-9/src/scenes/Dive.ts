@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import EventBus from '../EventBus.ts';
 import AudioManager from '../core/AudioManager.ts';
 import GameState from '../core/GameState.ts';
-import { COLORS, CSS, WORLD, CULL_PAD, SUB, SONAR, BOLT, ZONES, RESOURCES, RESOURCE_KINDS, ResourceKind, REPAIR } from '../config.ts';
+import { COLORS, CSS, WORLD, CULL_PAD, SUB, CLAW, SONAR, BOLT, ZONES, RESOURCES, RESOURCE_KINDS, ResourceKind, REPAIR } from '../config.ts';
 import { generateWorld } from '../data/WorldGen.ts';
 import Sub from '../entities/Sub.ts';
 import Creature from '../entities/Creature.ts';
@@ -131,7 +131,18 @@ export class Dive extends Phaser.Scene {
   }
   private fireClaw(): void {
     if (this.isOver || this.claw.busy() || this.sub.battery <= 0) return;
-    if (this.claw.fire(this.sub.heading)) { this.sub.battery = Math.max(0, this.sub.battery - 0.6); AudioManager.harvest(); }
+    if (this.claw.fire(this.aimClaw())) { this.sub.battery = Math.max(0, this.sub.battery - 0.6); AudioManager.harvest(); }
+  }
+  /** Auto-aim: snap the claw toward the nearest grabbable node/loose in reach
+   *  (any direction), else fire straight ahead. Claw only grabs minerals/relics
+   *  — drifting creatures are not loot (laser them). */
+  private aimClaw(): number {
+    const m = this.sub.muzzle(); const reach = CLAW.range + 36;
+    let best = Infinity, bestA = this.sub.heading;
+    const consider = (x: number, y: number) => { const d = Math.hypot(x - m.x, y - m.y); if (d < reach && d < best) { best = d; bestA = Math.atan2(y - m.y, x - m.x); } };
+    for (const n of this.nodes) if (!n.culled && !n.depleted) consider(n.x, n.y);
+    for (const l of this.loose) if (!l.culled && l.alive) consider(l.x, l.y);
+    return bestA;
   }
 
   // -- Loop ------------------------------------------------------------
@@ -256,7 +267,10 @@ export class Dive extends Phaser.Scene {
   private pressure(dt: number): void {
     const zi = this.zoneIndex(this.sub.y); const armor = GameState.getUpgrade('armor');
     if (zi > armor && this.sub.alive) {
-      this.sub.takeDamage(ZONES[zi].crushDps * dt, true);
+      // crush ramps up with depth INTO the over-pressured zone: gentle on the
+      // shallow shelf (harvest a little under-armored) → full deeper down.
+      const ramp = Phaser.Math.Clamp((this.sub.y - ZONES[zi].yStart) / 900, 0.25, 1);
+      this.sub.takeDamage(ZONES[zi].crushDps * ramp * dt, true);
       this.crushShakeCd -= dt * 1000;
       if (this.crushShakeCd <= 0) { this.crushShakeCd = 650; this.cameras.main.shake(320, 0.012); AudioManager.warn(); gsap.killTweensOf(this.crushVig); gsap.fromTo(this.crushVig, { fillAlpha: 0.28 }, { fillAlpha: 0, duration: 0.6 }); EventBus.emit('crush', { zone: ZONES[zi].name }); }
     }

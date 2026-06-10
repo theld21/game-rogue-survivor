@@ -44,7 +44,7 @@ export const SUB = {
   maxBattery: 100,
   oxygenDrain: 0.85,     // per second (always)
   batteryMove: 1.1,      // per second while thrusting
-  batteryLight: 2.4,     // per second while flashlight on
+  batteryLight: 2.0,     // per second while flashlight on
   batterySonar: 4,       // per ping
   cargoMax: 40,
 };
@@ -109,7 +109,7 @@ export const CREATURE_KINDS = Object.keys(CREATURES) as CreatureKind[];
 export const UPGRADES = {
   oxygen:  { name: 'O₂ Tank',     max: 4, cost: (l: number) => 80 + l * 110, desc: '+ oxygen capacity' },
   battery: { name: 'Cell Bank',   max: 4, cost: (l: number) => 90 + l * 120, desc: '+ battery capacity' },
-  armor:   { name: 'Pressure Hull', max: 2, cost: (l: number) => 220 + l * 320, desc: 'survive a deeper zone' },
+  armor:   { name: 'Pressure Hull', max: 2, cost: (l: number) => 170 + l * 240, desc: 'survive a deeper zone' },
   sonar:   { name: 'Sonar Array', max: 4, cost: (l: number) => 70 + l * 95, desc: '+ sonar radius & reveal' },
   hull:    { name: 'Hull Plating', max: 4, cost: (l: number) => 110 + l * 130, desc: '+ max hull integrity' },
   light:   { name: 'Beam Lens',   max: 3, cost: (l: number) => 100 + l * 130, desc: '+ flashlight range' },
@@ -126,5 +126,5 @@ export const REPAIR: RepairStage[] = [
   { mat: 'crystal',   need: 8, part: 'Power Core',     where: 'Twilight Trench',  how: 'Claw glowing crystal clusters',   tool: 'claw' },
   { mat: 'salvage',   need: 6, part: 'Hull Plates',    where: 'Twilight wrecks',  how: 'Claw drifting ancient relics',    tool: 'claw' },
   { mat: 'biosample', need: 6, part: 'Bio-Seals',      where: 'Anywhere (life)',  how: 'Laser deep-sea creatures',        tool: 'laser' },
-  { mat: 'pearl',     need: 4, part: 'Nav Lens',       where: 'The Abyss',        how: 'Claw rare abyss pearls',          tool: 'claw' },
+  { mat: 'pearl',     need: 3, part: 'Nav Lens',       where: 'The Abyss',        how: 'Claw rare abyss pearls',          tool: 'claw' },
 ];

@@ -45,11 +45,11 @@ export class Claw {
       let grabbed = false;
       for (const n of world.nodes) {
         if (n.culled || n.depleted) continue;
-        if (Math.hypot(n.x - hx, n.y - hy) < 26) { if (n.harvest()) { this.carrying = n.kind; grabbed = true; } break; }
+        if (Math.hypot(n.x - hx, n.y - hy) < 30) { if (n.harvest()) { this.carrying = n.kind; grabbed = true; } break; }
       }
       if (!grabbed) for (const it of world.loose) {
         if (!it.alive || it.culled) continue;
-        if (Math.hypot(it.x - hx, it.y - hy) < 28) { it.grab(); this.carrying = it.kind; grabbed = true; break; }
+        if (Math.hypot(it.x - hx, it.y - hy) < 30) { it.grab(); this.carrying = it.kind; grabbed = true; break; }
       }
       if (grabbed || f >= 1) { this.state = 'reel'; this.reelFrom = this.len; this.t = 0; }
     } else if (this.state === 'reel') {

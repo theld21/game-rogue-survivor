@@ -72,7 +72,6 @@ EventBus.on('hud', (d: any) => {
   $('hud-credits').textContent = String(d.credits);
   $('crush-warn').style.display = d.crushing ? 'block' : 'none';
   ($('light-btn') as HTMLElement).classList.toggle('light-active', d.lightOn);
-  if (d.obj) $('obj-text').innerHTML = d.obj.part === 'COMPLETE' ? '<span style="color:#76e08a">Ship repaired!</span>' : `<b style="color:#aaf6ff">${d.obj.stage}/${d.obj.total}</b> ${d.obj.part} · <span style="color:#57f0d0">${d.obj.have}/${d.obj.need} ${d.obj.mat}</span>`;
   ($('station-wrap') as HTMLElement).style.display = d.nearBase ? 'block' : 'none';
 });
 EventBus.on('light_state', (d: any) => ($('light-btn') as HTMLElement).classList.toggle('light-active', d.on));
