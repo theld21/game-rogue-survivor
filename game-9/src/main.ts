@@ -175,51 +175,55 @@ function renderUpgrades(): void {
 }
 
 // ---- How to Play (built from config so it never drifts from the real game) ----
-const BEHAVIOR_VI: Record<string, { label: string; desc: string }> = {
-  fear:    { label: 'Sợ ánh sáng', desc: 'Né chùm đèn — là con mồi, nhưng đụng vẫn đau.' },
-  attract: { label: 'Mê ánh sáng', desc: 'Lao tới ánh đèn & tàu khi tới gần — kẻ săn mồi.' },
-  sound:   { label: 'Săn âm thanh', desc: 'Đuổi theo sóng sonar và tiếng động cơ lúc gần.' },
-  ambush:  { label: 'Rình rập',     desc: 'Bất động rồi phóng tới khi bạn lại gần.' },
-  crusher: { label: 'Truy sát',     desc: 'Đuổi dai dẳng, húc rất mạnh.' },
+const BEHAVIOR: Record<string, { label: string; desc: string }> = {
+  fear:    { label: 'Light-fearing', desc: 'Flees your beam — prey, but still hurts on contact.' },
+  attract: { label: 'Light-drawn',   desc: 'Charges the lamp, and the sub when it gets close — a predator.' },
+  sound:   { label: 'Sound-hunter',  desc: 'Tracks your sonar pings, and your engine up close.' },
+  ambush:  { label: 'Ambusher',      desc: 'Lurks still, then darts when you get near.' },
+  crusher: { label: 'Crusher',       desc: 'Relentless chaser that rams hard.' },
 };
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 function renderGuide(): void {
-  const sec = (title: string, inner: string) => `<div class="glass rounded-2xl p-3.5 flex flex-col gap-2.5"><div class="font-display font-bold text-[11px] tracking-[0.22em] uppercase" style="color:#aaf6ff">${title}</div>${inner}</div>`;
-  const row = (icon: string, color: string, name: string, body: string) => `<div class="flex gap-2.5 items-start"><span class="w-5 h-5 flex-none mt-px" style="color:${color}">${ICONS[icon] ?? ''}</span><div class="leading-snug"><span class="font-display font-bold text-[13px]" style="color:${color}">${name}</span> <span class="font-body text-[12px] text-ink/70">${body}</span></div></div>`;
-  const chip = (color: string, label: string, extra = '') => `<span class="glass rounded-full px-2 py-0.5 text-[11px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+  // a section card with a clear, spaced-out header
+  const sec = (color: string, title: string, inner: string) => `<div class="glass rounded-2xl p-4 flex flex-col gap-3.5">
+    <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span><span class="font-display font-bold text-[12px] tracking-[0.2em] uppercase text-ink/90">${title}</span></div>${inner}</div>`;
+  // two-line row: bold name on top, airy description below
+  const row = (icon: string, color: string, name: string, body: string) => `<div class="flex gap-3 items-start">
+    <span class="w-6 h-6 flex-none mt-0.5" style="color:${color}">${ICONS[icon] ?? ''}</span>
+    <div><div class="font-display font-bold text-[13px]" style="color:${color}">${name}</div><div class="font-body text-[12.5px] text-ink/65 leading-relaxed">${body}</div></div></div>`;
+  const chip = (color: string, label: string, extra = '') => `<span class="glass rounded-full px-2.5 py-1 text-[11.5px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
 
-  const stages = REPAIR.map((s, i) => { const m = RESOURCES[s.mat]; return `<div class="flex items-baseline gap-2 text-[12px]"><span class="font-mono font-bold w-4 flex-none" style="color:#57f0d0">${i + 1}</span><span class="font-display font-bold flex-none" style="color:${m.css}">${s.part}</span><span class="text-ink/60">· ${s.need} ${m.name} · ${s.where}</span></div>`; }).join('');
-  const objective = sec('Mục tiêu', `<div class="font-body text-[12px] text-ink/75">Sửa chiếc phi thuyền đắm trên mặt biển qua <b style="color:#57f0d0">5 giai đoạn</b> — mỗi giai đoạn cần một nguyên liệu ở một độ sâu khác. Gom đủ, lắp tại trạm, phi thuyền cất cánh đưa bạn thoát khỏi vực sâu → <b style="color:#ffe9a8">CHIẾN THẮNG</b>.</div>${stages}`);
+  const stages = `<div class="flex flex-col gap-2 pt-1">` + REPAIR.map((s, i) => { const m = RESOURCES[s.mat]; return `<div class="flex items-baseline gap-2.5 text-[12.5px]"><span class="font-mono font-bold w-4 flex-none text-center" style="color:#57f0d0">${i + 1}</span><span class="font-display font-bold flex-none" style="color:${m.css}">${s.part}</span><span class="text-ink/55">${s.need} ${m.name} · ${s.where}</span></div>`; }).join('') + `</div>`;
+  const objective = sec('#ffe9a8', 'Objective', `<div class="font-body text-[12.5px] text-ink/70 leading-relaxed">Repair the wrecked starship on the surface across <b style="color:#57f0d0">5 stages</b> — each needs a different material from a different depth. Gather them, install them at the station, and the ship launches you out of the abyss → <b style="color:#ffe9a8">YOU WIN</b>.</div>${stages}`);
 
-  const controls = sec('Điều khiển', [
-    row('move', '#46e8ff', 'Lái tàu', 'Chạm & kéo nửa dưới màn để lái. Tàu có lực nổi — đẩy XUỐNG để lặn.'),
-    row('claw', '#57f0d0', 'Tay kéo', 'Bắn ra gắp quặng/cổ vật gần nhất (tự nhắm, mọi hướng).'),
-    row('laser', '#ff4a5a', 'Súng', 'Giữ để bắn đạn hạ sinh vật — chúng rơi Bio Sample.'),
-    row('sonar', '#46e8ff', 'Sonar', 'Phát sóng hé lộ vùng tối quanh bạn vài giây (tốn pin).'),
-    row('light', '#ffc24a', 'Đèn pin', 'Soi nón sáng. Tốn pin & THU HÚT kẻ săn mồi — cân nhắc tắt.'),
-    row('wrench', '#9fe8ff', 'Trạm', 'Lại gần trạm trên mặt nước → mở để bán, sửa phi thuyền, nâng cấp.'),
+  const controls = sec('#46e8ff', 'Controls', [
+    row('move', '#46e8ff', 'Pilot', 'Touch & drag the lower half of the screen to steer. The sub floats — push DOWN to dive.'),
+    row('claw', '#57f0d0', 'Claw', 'Fires out and grabs the nearest ore or relic (auto-aims, any direction).'),
+    row('laser', '#ff4a5a', 'Blaster', 'Hold to fire bolts at creatures — they drop Bio Samples.'),
+    row('sonar', '#46e8ff', 'Sonar', 'Pings a pulse that reveals the dark around you for a few seconds (uses battery).'),
+    row('light', '#ffc24a', 'Flashlight', 'Lights a cone. Drains battery & LURES predators — sometimes go dark.'),
+    row('wrench', '#9fe8ff', 'Station', 'Dock near the surface station to sell, repair the ship, and upgrade.'),
   ].join(''));
 
-  const survival = sec('Sinh tồn', [
-    row('hull', '#76e08a', 'Vỏ tàu', 'Hết → nổ. Hao khi đâm đá, bị cắn, hoặc áp suất nghiền.'),
-    row('oxygen', '#46e8ff', 'Oxy', 'Tụt liên tục theo thời gian. Hết → chết ngạt.'),
-    row('battery', '#ffc24a', 'Pin', 'Hao khi chạy / bật đèn / sonar. Hết → đèn tắt & tàu chìm.'),
-    `<div class="font-body text-[12px] text-ink/70">Lại gần <b style="color:#9fe8ff">TRẠM</b> trên mặt nước để nạp đầy cả ba miễn phí.</div>`,
-  ].join(''));
+  const survival = sec('#76e08a', 'Survival', [
+    row('hull', '#76e08a', 'Hull', 'Hits 0 → you explode. Lost to rock impacts, bites, and pressure crush.'),
+    row('oxygen', '#46e8ff', 'Oxygen', 'Drains constantly over time. Empty → you suffocate.'),
+    row('battery', '#ffc24a', 'Battery', 'Drains while thrusting / light / sonar. Empty → the light dies & the sub sinks.'),
+  ].join('') + `<div class="font-body text-[12.5px] text-ink/65 leading-relaxed">Dock at the surface <b style="color:#9fe8ff">STATION</b> to refill all three for free.</div>`);
 
-  const dark = sec('Bóng tối & tầm nhìn', `<div class="font-body text-[12px] text-ink/75">Càng sâu càng tối mịt. Chỉ <b style="color:#ffe9a8">đèn pin</b> (nón sáng) và <b style="color:#46e8ff">sonar</b> mới hé lộ thế giới. Đèn nhìn xa nhưng <b style="color:#ff7a3c">dụ quái từ xa</b> — nhiều khi nên chạy tối, chỉ ping sonar khi cần.</div>`);
+  const dark = sec('#aaf6ff', 'Darkness & Vision', `<div class="font-body text-[12.5px] text-ink/70 leading-relaxed">The deeper you go, the darker it gets. Only your <b style="color:#ffe9a8">flashlight cone</b> and <b style="color:#46e8ff">sonar pings</b> reveal the world. Light sees far but draws predators from afar — often it's smarter to run dark and ping only when you need to.</div>`);
 
   const zoneCols = ['#9fe8ff', '#46e8ff', '#b56cff'];
-  const zones = sec('Vùng áp suất', ZONES.map((z, i) => { const depth = Math.round(z.yStart / 10); const arm = z.armorReq === 0 ? 'không cần giáp' : `cần Giáp ${z.armorReq}`; const crush = z.crushDps === 0 ? 'an toàn' : `nghiền ${z.crushDps}/s nếu thiếu giáp`; return `<div class="flex items-center justify-between text-[12px]"><span class="font-display font-bold" style="color:${zoneCols[i] ?? '#fff'}">${z.name}</span><span class="text-ink/55 text-[11px] text-right">${depth}m+ · ${crush}<br>${arm}</span></div>`; }).join('') + `<div class="font-body text-[11px] text-ink/55">Sát thương nghiền tăng dần theo độ sâu — có thể nhào vào mép trên vùng sâu cạp ít nguyên liệu rồi rút, dù chưa đủ giáp.</div>`);
+  const zones = sec('#b56cff', 'Pressure Zones', `<div class="flex flex-col gap-2.5">` + ZONES.map((z, i) => { const depth = Math.round(z.yStart / 10); const arm = z.armorReq === 0 ? 'no armor needed' : `needs Armor ${z.armorReq}`; const crush = z.crushDps === 0 ? 'safe' : `crushes ${z.crushDps}/s under-armored`; return `<div class="flex items-center justify-between gap-2 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${zoneCols[i] ?? '#fff'}">${z.name}</span><span class="text-ink/55 text-[11px] text-right leading-tight">${depth}m+ · ${crush}<br>${arm}</span></div>`; }).join('') + `</div><div class="font-body text-[11.5px] text-ink/55 leading-relaxed">Crush ramps up with depth — you can dip into the top of a deeper zone to grab a little before you can afford the armor.</div>`);
 
-  const behav = Object.values(BEHAVIOR_VI).map((v) => `<div class="text-[12px]"><span class="font-display font-bold" style="color:#ff5c7a">${v.label}:</span> <span class="text-ink/70">${v.desc}</span></div>`).join('');
-  const list = `<div class="flex flex-wrap gap-1.5 pt-0.5">` + CREATURE_KINDS.map((k) => chip(hex(CREATURES[k].color), CREATURES[k].name)).join('') + `</div>`;
-  const creatures = sec('Sinh vật & tập tính', behav + list);
+  const behav = `<div class="flex flex-col gap-2">` + Object.values(BEHAVIOR).map((v) => `<div class="text-[12.5px] leading-relaxed"><span class="font-display font-bold" style="color:#ff5c7a">${v.label}</span> <span class="text-ink/65">— ${v.desc}</span></div>`).join('') + `</div>`;
+  const list = `<div class="flex flex-wrap gap-2 pt-1">` + CREATURE_KINDS.map((k) => chip(hex(CREATURES[k].color), CREATURES[k].name)).join('') + `</div>`;
+  const creatures = sec('#ff5c7a', 'Creatures & Behaviors', behav + list);
 
-  const res = sec('Tài nguyên', `<div class="flex flex-wrap gap-1.5">` + RESOURCE_KINDS.map((k) => chip(RESOURCES[k].css, RESOURCES[k].name, ` <span class="text-warn font-mono ml-0.5">${RESOURCES[k].value}◈</span>`)).join('') + `</div>`);
-  const ups = sec('Nâng cấp (đổi bằng ◈ tại trạm)', (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => { const u = UPGRADES[k]; return `<div class="flex items-center justify-between gap-2 text-[12px]"><span class="font-display font-bold flex-none" style="color:${UMETA[k]}">${u.name}</span><span class="text-ink/55 text-[11px] text-right">${u.desc} · tối đa ${u.max}</span></div>`; }).join(''));
+  const res = sec('#c9a86e', 'Resources', `<div class="flex flex-wrap gap-2">` + RESOURCE_KINDS.map((k) => chip(RESOURCES[k].css, RESOURCES[k].name, ` <span class="text-warn font-mono ml-0.5">${RESOURCES[k].value}◈</span>`)).join('') + `</div>`);
+  const ups = sec('#ff7a3c', 'Upgrades (buy with ◈ at the station)', `<div class="flex flex-col gap-2.5">` + (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => { const u = UPGRADES[k]; return `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${UMETA[k]}">${u.name}</span><span class="text-ink/55 text-[11px] text-right leading-tight">${u.desc} · max ${u.max}</span></div>`; }).join('') + `</div>`);
 
-  const tips = sec('Mẹo sống sót', ['Bán tài nguyên lấy ◈ rồi mua Giáp trước khi lặn sâu.', 'Tắt đèn để lén qua kẻ săn mồi; chỉ bật khi cần soi.', 'Để mắt cây Pin — hết pin là đèn tắt và tàu chìm.', 'Đâm đá tốc độ cao gây hư vỏ — đi chậm ở nơi hẹp.'].map((t) => `<div class="flex gap-2 text-[12px] text-ink/75"><span class="flex-none" style="color:#57f0d0">▸</span>${t}</div>`).join(''));
+  const tips = sec('#57f0d0', 'Survival Tips', `<div class="flex flex-col gap-2">` + ['Sell resources for ◈, then buy Armor before diving deep.', 'Kill the lights to sneak past predators; flick them on only to see.', 'Watch the battery — at zero your light dies and you sink.', 'High-speed rock impacts damage the hull — go slow in tight gaps.'].map((t) => `<div class="flex gap-2.5 text-[12.5px] text-ink/70 leading-relaxed"><span class="flex-none" style="color:#57f0d0">▸</span>${t}</div>`).join('') + `</div>`);
 
   $('guide-body').innerHTML = objective + controls + survival + dark + zones + creatures + res + ups + tips;
 }
