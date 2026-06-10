@@ -9,6 +9,11 @@ import { COLORS, CREATURES, CreatureKind } from '../config.ts';
 
 export interface AICtx { subX: number; subY: number; lightOn: boolean; litByCone: boolean; ping: { x: number; y: number; t: number } | null; now: number; }
 
+// How close the sub gets before a predator senses & chases it WITHOUT the
+// flashlight (engine hum / pressure wake). Light & sonar extend detection
+// much farther; this guarantees threat even when you run dark.
+const NOTICE = 340;
+
 export class Creature extends Phaser.GameObjects.Container {
   kind: CreatureKind;
   hp: number; radius: number; alive = true; culled = true; built = false;
@@ -104,11 +109,14 @@ export class Creature extends Phaser.GameObjects.Container {
         if (ctx.litByCone) { this.aiState = 'flee'; vx = -(dx / dist) * sp * 1.7; vy = -(dy / dist) * sp * 1.7; } else { drift(); vy -= 8; }
         break;
       case 'attract':
-        if (ctx.lightOn && dist < 760) { this.aiState = 'charge'; vx = (dx / dist) * sp; vy = (dy / dist) * sp; } else drift();
+        // lured to the lamp from afar, AND charges the sub once it's noticed up close (even in the dark)
+        if ((ctx.lightOn && dist < 760) || dist < NOTICE) { this.aiState = 'charge'; vx = (dx / dist) * sp; vy = (dy / dist) * sp; } else drift();
         break;
       case 'sound':
         if (ctx.ping && ctx.ping.t !== this.huntUntil) { this.huntUntil = ctx.ping.t; this.huntX = ctx.ping.x; this.huntY = ctx.ping.y; }
-        if (ctx.now < this.huntUntil + 4200) { this.aiState = 'hunt'; const near = Math.hypot(this.huntX - this.x, this.huntY - this.y) < 80; const tx = near ? ctx.subX : this.huntX, ty = near ? ctx.subY : this.huntY; const a = Math.atan2(ty - this.y, tx - this.x); vx = Math.cos(a) * sp; vy = Math.sin(a) * sp; } else drift();
+        if (ctx.now < this.huntUntil + 4200) { this.aiState = 'hunt'; const near = Math.hypot(this.huntX - this.x, this.huntY - this.y) < 80; const tx = near ? ctx.subX : this.huntX, ty = near ? ctx.subY : this.huntY; const a = Math.atan2(ty - this.y, tx - this.x); vx = Math.cos(a) * sp; vy = Math.sin(a) * sp; }
+        else if (dist < NOTICE) { this.aiState = 'hunt'; vx = (dx / dist) * sp; vy = (dy / dist) * sp; }   // hears your engine up close
+        else drift();
         break;
       case 'ambush':
         if (dist < 230) { this.aiState = 'dart'; vx = (dx / dist) * sp * 1.9; vy = (dy / dist) * sp * 1.9; } else { drift(); vx *= 0.5; vy *= 0.5; }
