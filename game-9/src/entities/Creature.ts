@@ -11,7 +11,7 @@ export interface AICtx { subX: number; subY: number; lightOn: boolean; litByCone
 
 export class Creature extends Phaser.GameObjects.Container {
   kind: CreatureKind;
-  hp: number; radius: number; alive = true; culled = true; private built = false;
+  hp: number; radius: number; alive = true; culled = true; built = false;
   aiState: 'idle' | 'flee' | 'charge' | 'hunt' | 'dart' = 'idle';
   private bodyGfx!: Phaser.GameObjects.Graphics;
   private heading = Math.random() * Math.PI * 2;
@@ -135,8 +135,8 @@ export class Creature extends Phaser.GameObjects.Container {
   }
   setCulled(off: boolean): void {
     if (this.culled === off) return; this.culled = off;
-    if (!off && !this.built) { this.buildArt(); this.built = true; }   // build + show same frame (no flash)
-    this.setVisible(!off); this.setActive(!off);
+    this.setVisible(!off && this.built); this.setActive(!off);
   }
+  ensureBuilt(): void { if (this.built) return; this.buildArt(); this.built = true; this.setVisible(!this.culled); }
 }
 export default Creature;

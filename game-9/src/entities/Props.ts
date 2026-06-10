@@ -17,17 +17,18 @@ import { RockDef, NodeDef, VentDef, DecorDef, LooseDef } from '../data/WorldGen.
 // =====================================================================
 
 abstract class Prop extends Phaser.GameObjects.Container {
-  culled = true; private built = false;
+  culled = true; built = false;
   protected init(scene: Phaser.Scene, x: number, y: number, depth: number): void {
     this.setPosition(x, y); scene.add.existing(this); this.setDepth(depth); this.setVisible(false);
   }
-  /** Draw the (heavy) art. Called once, lazily, on first reveal. */
+  /** Draw the (heavy) art. Called once, lazily, via the scene's build budget. */
   protected abstract build(): void;
+  /** Cull only toggles visibility — never builds (the scene budgets builds). */
   setCulled(off: boolean): void {
     if (this.culled === off) return; this.culled = off;
-    if (!off && !this.built) { this.build(); this.built = true; }   // build + show in the SAME frame (no flash)
-    this.setVisible(!off); this.setActive(!off);
+    this.setVisible(!off && this.built); this.setActive(!off);
   }
+  ensureBuilt(): void { if (this.built) return; this.build(); this.built = true; this.setVisible(!this.culled); }
 }
 
 export class Rock extends Prop {

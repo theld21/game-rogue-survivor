@@ -74,8 +74,8 @@
         <div class="flex-1 h-2 bar-track"><div id="battery-bar" class="bar-fill" style="width:100%;background:#ffc24a"></div></div>
       </div>
     </div>
-    <!-- right: depth + zone + cargo -->
-    <div class="absolute right-3 flex flex-col items-end gap-1.5" style="top:max(env(safe-area-inset-top),14px)">
+    <!-- right: depth + zone + cargo (z-index above the joystick pad so the pause tap never reads as a move) -->
+    <div class="absolute right-3 flex flex-col items-end gap-1.5" style="top:max(env(safe-area-inset-top),14px);z-index:5">
       <button id="btn-pause" class="neon-btn pointer-events-auto w-9 h-9 rounded-lg glass flex items-center justify-center text-ink/80"><span class="w-5 h-5" data-ic="pause"></span></button>
       <div class="glass rounded-lg px-2.5 py-1 flex items-center gap-1.5 text-sonar font-mono text-sm"><span class="w-3.5 h-3.5" data-ic="depth"></span><span id="hud-depth">0</span>m</div>
       <div id="hud-zone" class="glass rounded-lg px-2.5 py-1 font-body text-[11px] text-sonarHot tracking-wide">SUNLIT SHALLOWS</div>

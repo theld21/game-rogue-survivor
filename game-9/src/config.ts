@@ -9,9 +9,14 @@
 
 export const WORLD = { width: 3200, height: 10000, surfaceY: 360 };
 
-/** Frustum cull margin (px beyond camera view). */
-export const CULL_PAD = 300;
+/** Frustum cull margin (px beyond camera view). Big enough that art for an
+ *  object builds well BEFORE it scrolls on-screen (≈1.9s lead at dive speed). */
+export const CULL_PAD = 600;
 export const CHUNK_H = 1000;   // logical chunk height for sleep/wake
+/** Max heavy-art builds per frame — spreads a region's reveal over several
+ *  frames so descending into a dense band never freezes. (First frame fills
+ *  the whole start screen at once.) */
+export const BUILD_BUDGET = 3;
 
 export const COLORS = {
   surface: 0x2a6e8c, shallow: 0x0a3550, mid: 0x041d30, abyss: 0x01080f, void: 0x000308,

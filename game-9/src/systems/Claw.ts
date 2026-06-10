@@ -8,7 +8,7 @@ import { ResourceNode } from '../entities/Props.ts';
 // reels the material back into the cargo. Kinematic + leak-free.
 // =====================================================================
 
-export interface LooseLike { x: number; y: number; kind: ResourceKind; alive: boolean; culled: boolean; grab(): void; }
+export interface LooseLike { x: number; y: number; kind: ResourceKind; alive: boolean; culled: boolean; built: boolean; grab(): void; }
 export interface ClawWorld {
   nodes: ResourceNode[]; loose: LooseLike[];
   addCargo(kind: ResourceKind): boolean;
@@ -44,11 +44,11 @@ export class Claw {
       // try to grab a node
       let grabbed = false;
       for (const n of world.nodes) {
-        if (n.culled || n.depleted) continue;
+        if (n.culled || !n.built || n.depleted) continue;
         if (Math.hypot(n.x - hx, n.y - hy) < 30) { if (n.harvest()) { this.carrying = n.kind; grabbed = true; } break; }
       }
       if (!grabbed) for (const it of world.loose) {
-        if (!it.alive || it.culled) continue;
+        if (!it.alive || it.culled || !it.built) continue;
         if (Math.hypot(it.x - hx, it.y - hy) < 30) { it.grab(); this.carrying = it.kind; grabbed = true; break; }
       }
       if (grabbed || f >= 1) { this.state = 'reel'; this.reelFrom = this.len; this.t = 0; }

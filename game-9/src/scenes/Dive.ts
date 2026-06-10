@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import EventBus from '../EventBus.ts';
 import AudioManager from '../core/AudioManager.ts';
 import GameState from '../core/GameState.ts';
-import { COLORS, CSS, WORLD, CULL_PAD, SUB, CLAW, SONAR, BOLT, ZONES, RESOURCES, RESOURCE_KINDS, ResourceKind, REPAIR } from '../config.ts';
+import { COLORS, CSS, WORLD, CULL_PAD, BUILD_BUDGET, SUB, CLAW, SONAR, BOLT, ZONES, RESOURCES, RESOURCE_KINDS, ResourceKind, REPAIR } from '../config.ts';
 import { generateWorld } from '../data/WorldGen.ts';
 import Sub from '../entities/Sub.ts';
 import Creature from '../entities/Creature.ts';
@@ -18,6 +18,9 @@ import Claw, { ClawWorld } from '../systems/Claw.ts';
 // creatures, dodge the dark with sonar, fight pressure. Deposit materials
 // at the surface station to repair the spaceship — 5 stages → launch → win.
 // =====================================================================
+
+/** Anything the cull loop reveals + lazily builds on a frame budget. */
+interface Buildable { y: number; built: boolean; setCulled(off: boolean): void; ensureBuilt(): void; }
 
 export class Dive extends Phaser.Scene {
   private sub!: Sub;
@@ -86,6 +89,7 @@ export class Dive extends Phaser.Scene {
     this.rocks = []; this.nodes = []; this.loose = []; this.vents = []; this.decor = []; this.creatures = [];
     this.joy = { x: 0, y: 0, mag: 0 }; this.lightOn = false; this.firing = false; this.fireCd = 0; this.sonarCd = 0;
     this.nearBase = false; this.stationOpen = false; this.crushShakeCd = 0; this.hudCd = 0; this.isOver = false; this.won = false; this.tornDown = false;
+    this.firstFrame = true; this.pendingBuild = [];
   }
   private onResize(): void { this.light?.resize(); const cam = this.cameras.main; this.crushVig?.setSize(cam.width, cam.height); }
 
@@ -140,8 +144,8 @@ export class Dive extends Phaser.Scene {
     const m = this.sub.muzzle(); const reach = CLAW.range + 36;
     let best = Infinity, bestA = this.sub.heading;
     const consider = (x: number, y: number) => { const d = Math.hypot(x - m.x, y - m.y); if (d < reach && d < best) { best = d; bestA = Math.atan2(y - m.y, x - m.x); } };
-    for (const n of this.nodes) if (!n.culled && !n.depleted) consider(n.x, n.y);
-    for (const l of this.loose) if (!l.culled && l.alive) consider(l.x, l.y);
+    for (const n of this.nodes) if (!n.culled && n.built && !n.depleted) consider(n.x, n.y);
+    for (const l of this.loose) if (!l.culled && l.built && l.alive) consider(l.x, l.y);
     return bestA;
   }
 
@@ -189,21 +193,30 @@ export class Dive extends Phaser.Scene {
     return Math.min(0.97, 0.12 + t * 0.7 + t2 * 0.17);
   }
 
+  private pendingBuild: Buildable[] = [];
+  private firstFrame = true;
   private cull(): void {
     const v = this.cameras.main.worldView;
     const inView = (y: number, r: number) => y + r > v.y - CULL_PAD && y - r < v.bottom + CULL_PAD;
-    this.rocks.forEach((o) => o.setCulled(!inView(o.y, o.r)));
-    this.nodes.forEach((o) => o.setCulled(!inView(o.y, 40)));
-    this.loose.forEach((o) => o.setCulled(!inView(o.y, 40)));
-    this.vents.forEach((o) => o.setCulled(!inView(o.y, 60)));
-    this.decor.forEach((o) => o.setCulled(!inView(o.y, 150)));
-    this.creatures.forEach((o) => o.setCulled(!inView(o.y, o.radius + 40)));
+    const q = this.pendingBuild; q.length = 0;
+    const reveal = (o: Buildable, vis: boolean) => { o.setCulled(!vis); if (vis && !o.built) q.push(o); };
+    this.rocks.forEach((o) => reveal(o, inView(o.y, o.r)));
+    this.nodes.forEach((o) => reveal(o, inView(o.y, 40)));
+    this.loose.forEach((o) => reveal(o, inView(o.y, 40)));
+    this.vents.forEach((o) => reveal(o, inView(o.y, 60)));
+    this.decor.forEach((o) => reveal(o, inView(o.y, 150)));
+    this.creatures.forEach((o) => reveal(o, inView(o.y, o.radius + 40)));
+    // Build only a few per frame so crossing into a dense band never freezes.
+    // The very first frame fills the whole start screen at once (it's small).
+    const budget = this.firstFrame ? q.length : BUILD_BUDGET;
+    for (let i = 0; i < q.length && i < budget; i++) q[i].ensureBuilt();
+    this.firstFrame = false;
   }
 
   private collideRocks(): void {
     const s = this.sub;
     for (const rock of this.rocks) {
-      if (rock.culled) continue;
+      if (rock.culled || !rock.built) continue;
       const dx = s.x - rock.x, dy = s.y - rock.y, dd = Math.hypot(dx, dy) || 1;
       const minD = s.radius + rock.r * 0.84;
       if (dd < minD) {
@@ -217,7 +230,7 @@ export class Dive extends Phaser.Scene {
 
   private updateVents(dt: number): void {
     for (const vent of this.vents) {
-      if (vent.culled) continue;
+      if (vent.culled || !vent.built) continue;
       vent.pulse(dt);
       if (Math.random() < 0.3) this.bubbles.emit(vent.x + 2, vent.y - 42, 1, 8);
       const dx = this.sub.x - vent.x, dy = this.sub.y - (vent.y - 30);
@@ -240,7 +253,7 @@ export class Dive extends Phaser.Scene {
     this.bolts.update(dt);
     this.bolts.forEachActive((b) => {
       for (const c of this.creatures) {
-        if (c.culled || !c.alive) continue;
+        if (c.culled || !c.built || !c.alive) continue;
         if (Math.hypot(c.x - b.x, c.y - b.y) < c.radius + BOLT.radius) { AudioManager.hitCreature(); this.bubbles.emit(b.x, b.y, 1, 6); if (c.takeDamage(b.dmg)) this.killCreature(c); this.bolts.kill(b); break; }
       }
     });
@@ -249,7 +262,7 @@ export class Dive extends Phaser.Scene {
   private updateCreatures(dt: number): void {
     const ping = this.light.lastPing(); const now = this.time.now;
     for (const c of this.creatures) {
-      if (c.culled || !c.alive) continue;
+      if (c.culled || !c.built || !c.alive) continue;
       const litByCone = this.lightOn && this.light.isLit(c.x, c.y, this.sub.x, this.sub.y, this.sub.heading, this.lightOn, this.sub.lightRange);
       const dmg = c.update(dt, { subX: this.sub.x, subY: this.sub.y, lightOn: this.lightOn, litByCone, ping, now });
       if (dmg > 0) { this.sub.takeDamage(dmg); AudioManager.hurt(); this.cameras.main.shake(130, 0.006); this.bubbles.emit(this.sub.x, this.sub.y, 2); }
