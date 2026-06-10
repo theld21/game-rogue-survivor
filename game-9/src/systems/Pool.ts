@@ -51,7 +51,8 @@ export class BoltPool {
     b.img.setActive(true).setVisible(true).setPosition(x, y).setRotation(angle);
   }
   update(dt: number): void { for (const b of this.pool) { if (!b.active) continue; b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt; if (b.life <= 0) { this.kill(b); continue; } b.img.setPosition(b.x, b.y); } }
-  active(): Bolt[] { return this.pool.filter((b) => b.active); }
+  /** Allocation-free iteration over live bolts (no per-frame filter array). */
+  forEachActive(fn: (b: Bolt) => void): void { for (const b of this.pool) if (b.active) fn(b); }
   kill(b: Bolt): void { b.active = false; b.img.setActive(false).setVisible(false); }
   destroy(): void { this.pool.forEach((b) => b.img.destroy()); this.pool = []; }
 }

@@ -37,7 +37,7 @@ export class Dive extends Phaser.Scene {
   private crushVig!: Phaser.GameObjects.Rectangle;
 
   private joy = { x: 0, y: 0, mag: 0 };
-  private lightOn = true; private firing = false;
+  private lightOn = false; private firing = false;
   private fireCd = 0; private sonarCd = 0;
   private nearBase = false; private stationOpen = false;
   private crushShakeCd = 0; private hudCd = 0; private isOver = false; private won = false;
@@ -84,7 +84,7 @@ export class Dive extends Phaser.Scene {
 
   private resetState(): void {
     this.rocks = []; this.nodes = []; this.loose = []; this.vents = []; this.decor = []; this.creatures = [];
-    this.joy = { x: 0, y: 0, mag: 0 }; this.lightOn = true; this.firing = false; this.fireCd = 0; this.sonarCd = 0;
+    this.joy = { x: 0, y: 0, mag: 0 }; this.lightOn = false; this.firing = false; this.fireCd = 0; this.sonarCd = 0;
     this.nearBase = false; this.stationOpen = false; this.crushShakeCd = 0; this.hudCd = 0; this.isOver = false; this.won = false; this.tornDown = false;
   }
   private onResize(): void { this.light?.resize(); const cam = this.cameras.main; this.crushVig?.setSize(cam.width, cam.height); }
@@ -238,12 +238,12 @@ export class Dive extends Phaser.Scene {
       const m = this.sub.muzzle(); this.bolts.fire(m.x, m.y, m.angle, BOLT.speed, BOLT.life, BOLT.dmg); AudioManager.harpoon();
     }
     this.bolts.update(dt);
-    for (const b of this.bolts.active()) {
+    this.bolts.forEachActive((b) => {
       for (const c of this.creatures) {
         if (c.culled || !c.alive) continue;
         if (Math.hypot(c.x - b.x, c.y - b.y) < c.radius + BOLT.radius) { AudioManager.hitCreature(); this.bubbles.emit(b.x, b.y, 1, 6); if (c.takeDamage(b.dmg)) this.killCreature(c); this.bolts.kill(b); break; }
       }
-    }
+    });
   }
 
   private updateCreatures(dt: number): void {
@@ -328,7 +328,7 @@ export class Dive extends Phaser.Scene {
   private respawn(): void {
     this.sub.setVisible(true); this.sub.alive = true; this.sub.refill(); this.sub.clearCargo();
     this.sub.setPosition(SUB.startX, WORLD.surfaceY + 300); this.sub.body.setVelocity(0, 0);
-    this.lightOn = true; this.isOver = false; this.nearBase = false;
+    this.lightOn = false; this.isOver = false; this.nearBase = false;
     EventBus.emit('respawn'); this.emitHud();
   }
 

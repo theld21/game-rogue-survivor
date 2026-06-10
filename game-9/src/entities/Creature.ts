@@ -11,7 +11,7 @@ export interface AICtx { subX: number; subY: number; lightOn: boolean; litByCone
 
 export class Creature extends Phaser.GameObjects.Container {
   kind: CreatureKind;
-  hp: number; radius: number; alive = true; culled = false;
+  hp: number; radius: number; alive = true; culled = true; private built = false;
   aiState: 'idle' | 'flee' | 'charge' | 'hunt' | 'dart' = 'idle';
   private bodyGfx!: Phaser.GameObjects.Graphics;
   private heading = Math.random() * Math.PI * 2;
@@ -23,8 +23,7 @@ export class Creature extends Phaser.GameObjects.Container {
   constructor(scene: Phaser.Scene, x: number, y: number, kind: CreatureKind) {
     super(scene, x, y);
     this.kind = kind; const c = CREATURES[kind]; this.hp = c.hp; this.radius = c.radius;
-    scene.add.existing(this); this.setDepth(40);
-    this.buildArt();
+    scene.add.existing(this); this.setDepth(40); this.setVisible(false);   // art built lazily on first reveal
   }
 
   private glow(g: Phaser.GameObjects.Graphics, x: number, y: number, rr: number, c: number): void {
@@ -134,6 +133,10 @@ export class Creature extends Phaser.GameObjects.Container {
     if (this.hp <= 0) { this.alive = false; return true; }
     return false;
   }
-  setCulled(off: boolean): void { if (this.culled === off) return; this.culled = off; this.setVisible(!off); this.setActive(!off); }
+  setCulled(off: boolean): void {
+    if (this.culled === off) return; this.culled = off;
+    if (!off && !this.built) { this.buildArt(); this.built = true; }   // build + show same frame (no flash)
+    this.setVisible(!off); this.setActive(!off);
+  }
 }
 export default Creature;
