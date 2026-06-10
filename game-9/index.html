@@ -50,6 +50,7 @@
     </div>
     <div class="flex-[1]"></div>
     <button id="btn-dive" class="neon-btn w-full max-w-sm py-4 rounded-2xl font-display font-bold text-lg tracking-widest" style="background:linear-gradient(135deg,#46e8ff,#57f0d0);color:#041d30">DESCEND</button>
+    <button id="btn-guide" class="neon-btn w-full max-w-sm py-3 rounded-2xl glass font-display font-bold text-sm tracking-wider text-sonarHot flex items-center justify-center gap-2 mt-3"><span class="w-5 h-5" data-ic="book"></span>HOW TO PLAY</button>
     <div class="flex gap-3 w-full max-w-sm mt-3">
       <button id="btn-base" class="neon-btn flex-1 py-3 rounded-xl glass font-display font-bold text-sm tracking-wider text-sonar flex items-center justify-center gap-2"><span class="w-5 h-5" data-ic="wrench"></span>UPGRADE BAY</button>
       <button id="btn-settings" class="neon-btn w-12 py-3 rounded-xl glass flex items-center justify-center text-ink/70"><span class="w-5 h-5" data-ic="gear"></span></button>
@@ -160,6 +161,15 @@
     <div class="text-5xl mb-2">🫧</div>
     <div class="font-display font-black text-2xl tracking-widest text-danger" id="dead-title">SUB LOST</div>
     <div id="dead-sub" class="font-body text-ink/60 mt-1">Recovering to the surface…</div>
+  </div>
+
+  <!-- how to play -->
+  <div id="guide-panel" class="fixed inset-0 z-50 hidden flex-col text-ink" style="background:rgba(2,12,22,0.96);padding:max(env(safe-area-inset-top),16px) 14px max(env(safe-area-inset-bottom),16px)">
+    <div class="flex items-center justify-between mb-2.5 px-1">
+      <div class="font-display font-black text-2xl tracking-wider" style="background:linear-gradient(90deg,#46e8ff,#57f0d0,#aaf6ff);-webkit-background-clip:text;background-clip:text;color:transparent">HOW TO PLAY</div>
+      <button id="btn-guide-close" class="neon-btn w-9 h-9 rounded-lg glass flex items-center justify-center text-ink/80"><span class="w-5 h-5" data-ic="x"></span></button>
+    </div>
+    <div id="guide-body" class="flex-1 overflow-y-auto panel-scroll flex flex-col gap-2.5 px-1 pop-in"></div>
   </div>
 
   <!-- settings -->

@@ -7,7 +7,7 @@ import Dive from './scenes/Dive.ts';
 import EventBus from './EventBus.ts';
 import GameState from './core/GameState.ts';
 import AudioManager from './core/AudioManager.ts';
-import { UPGRADES, UpgradeKey, REPAIR, RESOURCES, CSS } from './config.ts';
+import { UPGRADES, UpgradeKey, REPAIR, RESOURCES, RESOURCE_KINDS, ZONES, CREATURES, CREATURE_KINDS, CSS } from './config.ts';
 
 // ---- Phaser (DPR-aware FIT) ----
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -44,6 +44,8 @@ const ICONS: Record<string, string> = {
   laser: sv('<circle cx="5" cy="12" r="2.4"/><circle cx="13" cy="12" r="1.4" fill="currentColor"/><circle cx="18" cy="12" r="1.4" fill="currentColor"/><circle cx="22" cy="12" r="1.2" fill="currentColor"/>'),
   rocket: sv('<path d="M12 3c3 2 5 6 5 10l-2 4h-6l-2-4c0-4 2-8 5-10zM12 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>'),
   x: sv('<path d="M6 6l12 12M18 6L6 18"/>', 2.4),
+  book: sv('<path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H11v15.5H4.5A1.5 1.5 0 0 0 3 21z"/><path d="M21 5.5A1.5 1.5 0 0 0 19.5 4H13v15.5h6.5A1.5 1.5 0 0 1 21 21z"/>'),
+  move: sv('<path d="M12 4v16M4 12h16M12 4l-2.4 2.4M12 4l2.4 2.4M12 20l-2.4-2.4M12 20l2.4 2.4M4 12l2.4-2.4M4 12l2.4 2.4M20 12l-2.4-2.4M20 12l2.4 2.4"/>'),
 };
 document.querySelectorAll('[data-ic]').forEach((el) => { const k = (el as HTMLElement).dataset.ic!; if (ICONS[k]) el.innerHTML = ICONS[k]; });
 
@@ -53,7 +55,7 @@ EventBus.on('load_complete', () => { const el = $('loading-screen'); gsap.to(el,
 
 // ---- Menu ----
 EventBus.on('enter_menu', () => {
-  ['hud', 'base-panel', 'pause-panel', 'dead-overlay', 'win-overlay', 'settings-panel', 'event-banner', 'station-wrap'].forEach(hide);
+  ['hud', 'base-panel', 'pause-panel', 'dead-overlay', 'win-overlay', 'settings-panel', 'guide-panel', 'event-banner', 'station-wrap'].forEach(hide);
   $('menu-credits').textContent = String(GameState.getCredits());
   $('menu-deepest').textContent = String(GameState.getDeepest());
   show('menu-overlay');
@@ -171,6 +173,58 @@ function renderUpgrades(): void {
     renderStation(); $('menu-credits').textContent = String(GameState.getCredits());
   }));
 }
+
+// ---- How to Play (built from config so it never drifts from the real game) ----
+const BEHAVIOR_VI: Record<string, { label: string; desc: string }> = {
+  fear:    { label: 'Sợ ánh sáng', desc: 'Né chùm đèn — là con mồi, nhưng đụng vẫn đau.' },
+  attract: { label: 'Mê ánh sáng', desc: 'Lao tới ánh đèn & tàu khi tới gần — kẻ săn mồi.' },
+  sound:   { label: 'Săn âm thanh', desc: 'Đuổi theo sóng sonar và tiếng động cơ lúc gần.' },
+  ambush:  { label: 'Rình rập',     desc: 'Bất động rồi phóng tới khi bạn lại gần.' },
+  crusher: { label: 'Truy sát',     desc: 'Đuổi dai dẳng, húc rất mạnh.' },
+};
+const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
+function renderGuide(): void {
+  const sec = (title: string, inner: string) => `<div class="glass rounded-2xl p-3.5 flex flex-col gap-2.5"><div class="font-display font-bold text-[11px] tracking-[0.22em] uppercase" style="color:#aaf6ff">${title}</div>${inner}</div>`;
+  const row = (icon: string, color: string, name: string, body: string) => `<div class="flex gap-2.5 items-start"><span class="w-5 h-5 flex-none mt-px" style="color:${color}">${ICONS[icon] ?? ''}</span><div class="leading-snug"><span class="font-display font-bold text-[13px]" style="color:${color}">${name}</span> <span class="font-body text-[12px] text-ink/70">${body}</span></div></div>`;
+  const chip = (color: string, label: string, extra = '') => `<span class="glass rounded-full px-2 py-0.5 text-[11px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+
+  const stages = REPAIR.map((s, i) => { const m = RESOURCES[s.mat]; return `<div class="flex items-baseline gap-2 text-[12px]"><span class="font-mono font-bold w-4 flex-none" style="color:#57f0d0">${i + 1}</span><span class="font-display font-bold flex-none" style="color:${m.css}">${s.part}</span><span class="text-ink/60">· ${s.need} ${m.name} · ${s.where}</span></div>`; }).join('');
+  const objective = sec('Mục tiêu', `<div class="font-body text-[12px] text-ink/75">Sửa chiếc phi thuyền đắm trên mặt biển qua <b style="color:#57f0d0">5 giai đoạn</b> — mỗi giai đoạn cần một nguyên liệu ở một độ sâu khác. Gom đủ, lắp tại trạm, phi thuyền cất cánh đưa bạn thoát khỏi vực sâu → <b style="color:#ffe9a8">CHIẾN THẮNG</b>.</div>${stages}`);
+
+  const controls = sec('Điều khiển', [
+    row('move', '#46e8ff', 'Lái tàu', 'Chạm & kéo nửa dưới màn để lái. Tàu có lực nổi — đẩy XUỐNG để lặn.'),
+    row('claw', '#57f0d0', 'Tay kéo', 'Bắn ra gắp quặng/cổ vật gần nhất (tự nhắm, mọi hướng).'),
+    row('laser', '#ff4a5a', 'Súng', 'Giữ để bắn đạn hạ sinh vật — chúng rơi Bio Sample.'),
+    row('sonar', '#46e8ff', 'Sonar', 'Phát sóng hé lộ vùng tối quanh bạn vài giây (tốn pin).'),
+    row('light', '#ffc24a', 'Đèn pin', 'Soi nón sáng. Tốn pin & THU HÚT kẻ săn mồi — cân nhắc tắt.'),
+    row('wrench', '#9fe8ff', 'Trạm', 'Lại gần trạm trên mặt nước → mở để bán, sửa phi thuyền, nâng cấp.'),
+  ].join(''));
+
+  const survival = sec('Sinh tồn', [
+    row('hull', '#76e08a', 'Vỏ tàu', 'Hết → nổ. Hao khi đâm đá, bị cắn, hoặc áp suất nghiền.'),
+    row('oxygen', '#46e8ff', 'Oxy', 'Tụt liên tục theo thời gian. Hết → chết ngạt.'),
+    row('battery', '#ffc24a', 'Pin', 'Hao khi chạy / bật đèn / sonar. Hết → đèn tắt & tàu chìm.'),
+    `<div class="font-body text-[12px] text-ink/70">Lại gần <b style="color:#9fe8ff">TRẠM</b> trên mặt nước để nạp đầy cả ba miễn phí.</div>`,
+  ].join(''));
+
+  const dark = sec('Bóng tối & tầm nhìn', `<div class="font-body text-[12px] text-ink/75">Càng sâu càng tối mịt. Chỉ <b style="color:#ffe9a8">đèn pin</b> (nón sáng) và <b style="color:#46e8ff">sonar</b> mới hé lộ thế giới. Đèn nhìn xa nhưng <b style="color:#ff7a3c">dụ quái từ xa</b> — nhiều khi nên chạy tối, chỉ ping sonar khi cần.</div>`);
+
+  const zoneCols = ['#9fe8ff', '#46e8ff', '#b56cff'];
+  const zones = sec('Vùng áp suất', ZONES.map((z, i) => { const depth = Math.round(z.yStart / 10); const arm = z.armorReq === 0 ? 'không cần giáp' : `cần Giáp ${z.armorReq}`; const crush = z.crushDps === 0 ? 'an toàn' : `nghiền ${z.crushDps}/s nếu thiếu giáp`; return `<div class="flex items-center justify-between text-[12px]"><span class="font-display font-bold" style="color:${zoneCols[i] ?? '#fff'}">${z.name}</span><span class="text-ink/55 text-[11px] text-right">${depth}m+ · ${crush}<br>${arm}</span></div>`; }).join('') + `<div class="font-body text-[11px] text-ink/55">Sát thương nghiền tăng dần theo độ sâu — có thể nhào vào mép trên vùng sâu cạp ít nguyên liệu rồi rút, dù chưa đủ giáp.</div>`);
+
+  const behav = Object.values(BEHAVIOR_VI).map((v) => `<div class="text-[12px]"><span class="font-display font-bold" style="color:#ff5c7a">${v.label}:</span> <span class="text-ink/70">${v.desc}</span></div>`).join('');
+  const list = `<div class="flex flex-wrap gap-1.5 pt-0.5">` + CREATURE_KINDS.map((k) => chip(hex(CREATURES[k].color), CREATURES[k].name)).join('') + `</div>`;
+  const creatures = sec('Sinh vật & tập tính', behav + list);
+
+  const res = sec('Tài nguyên', `<div class="flex flex-wrap gap-1.5">` + RESOURCE_KINDS.map((k) => chip(RESOURCES[k].css, RESOURCES[k].name, ` <span class="text-warn font-mono ml-0.5">${RESOURCES[k].value}◈</span>`)).join('') + `</div>`);
+  const ups = sec('Nâng cấp (đổi bằng ◈ tại trạm)', (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => { const u = UPGRADES[k]; return `<div class="flex items-center justify-between gap-2 text-[12px]"><span class="font-display font-bold flex-none" style="color:${UMETA[k]}">${u.name}</span><span class="text-ink/55 text-[11px] text-right">${u.desc} · tối đa ${u.max}</span></div>`; }).join(''));
+
+  const tips = sec('Mẹo sống sót', ['Bán tài nguyên lấy ◈ rồi mua Giáp trước khi lặn sâu.', 'Tắt đèn để lén qua kẻ săn mồi; chỉ bật khi cần soi.', 'Để mắt cây Pin — hết pin là đèn tắt và tàu chìm.', 'Đâm đá tốc độ cao gây hư vỏ — đi chậm ở nơi hẹp.'].map((t) => `<div class="flex gap-2 text-[12px] text-ink/75"><span class="flex-none" style="color:#57f0d0">▸</span>${t}</div>`).join(''));
+
+  $('guide-body').innerHTML = objective + controls + survival + dark + zones + creatures + res + ups + tips;
+}
+$('btn-guide').addEventListener('click', () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; });
+$('btn-guide-close').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });
 
 // ---- Dead / win ----
 const DEATH: Record<string, string> = { oxygen: 'Oxygen ran out.', battery: 'Power cells died in the dark.', hull: 'The hull caved in.' };
