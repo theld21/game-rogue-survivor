@@ -76,6 +76,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     public slowTimer?: Phaser.Time.TimerEvent;
     public freezeTimer?: Phaser.Time.TimerEvent;
 
+    // Hiệu ứng sống động (chibi)
+    public baseScale: number = 1.0;       // Tỉ lệ gốc (0.5 quái thường, 0.8/0.925 boss)
+    public bobOffset: number = 0;         // Lệch pha bob để đám đông không đồng bộ
+    public shadow?: Phaser.GameObjects.Ellipse; // Bóng đổ mềm dưới chân
+    public spawnAnimDone: boolean = true; // Chặn ghi scale-bob khi pop-in chưa xong
+
     constructor(scene: Phaser.Scene, x: number, y: number) {
         super(scene, x, y, 'enemy_slime');
         
@@ -109,6 +115,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.clearTint();
         this.setScale(1.0);
         this.setRotation(0);
+        this.setFlipX(false);
+        this.bobOffset = Phaser.Math.FloatBetween(0, Math.PI * 2);
         
         this.aiState = 'chase';
         this.lastActionTime = 0;
@@ -200,7 +208,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             if (type !== 'crystal_dragon') {
                 this.setScale(0.8);
             }
-            this.setTint(0xffaa00);
+            // Warm "boss aura" tint nhẹ để art chibi vẫn lên màu (white=trúng đòn, magenta=khiên)
+            this.setTint(0xffd9a0);
 
             if (this.body) {
                 let radius = 48;
@@ -225,6 +234,41 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.maxHp = Math.round(baseHp * multiplier);
         this.hp = this.maxHp;
         this.speed = Math.round(baseSpeed * (1 + (multiplier - 1) * 0.28));
+
+        // Ghi nhớ tỉ lệ gốc (đã được set ở trên: 0.5 thường, 0.8 boss, 0.925 rồng)
+        this.baseScale = this.scaleX;
+
+        // Bóng đổ mềm dưới chân (rẻ — bám theo trong update). Crystal_spike/lich_orb
+        // là bẫy/orb tĩnh nên bỏ qua cho gọn.
+        // Sprite quái ở depth 3, bóng ở depth 2 (trên lưới nền, dưới quái).
+        this.setDepth(3);
+        const wantShadow = type !== 'crystal_spike' && type !== 'lich_orb';
+        if (wantShadow) {
+            const sw = this.displayWidth * 0.62;
+            if (!this.shadow) {
+                this.shadow = this.scene.add.ellipse(x, y, sw, sw * 0.36, 0x000000, 0.22);
+            } else {
+                this.shadow.setSize(sw, sw * 0.36);
+                this.shadow.setActive(true).setVisible(true);
+            }
+            this.shadow.setDepth(2);
+        } else if (this.shadow) {
+            this.shadow.setVisible(false);
+        }
+
+        // Pop-in xuất hiện (scale tween nhanh, tween cho riêng từng con vẫn rẻ vì
+        // chỉ chạy 1 lần lúc spawn rồi dừng)
+        this.scene.tweens.killTweensOf(this);
+        this.spawnAnimDone = false;
+        this.setScale(this.baseScale * 0.2);
+        this.scene.tweens.add({
+            targets: this,
+            scaleX: this.baseScale,
+            scaleY: this.baseScale,
+            duration: 240,
+            ease: 'Back.easeOut',
+            onComplete: () => { this.spawnAnimDone = true; }
+        });
     }
 
     public update(time: number, delta: number): void {
@@ -247,13 +291,39 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         const distanceToPlayer = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
 
-        // Hiệu ứng bóp bóp ngộ nghĩnh
-        if (this.enemyType === 'slime' && this.aiState !== 'leap_prep') {
-            this.scaleY = 1 + 0.12 * Math.sin(time / 110);
-        } else if (this.enemyType === 'bat') {
-            this.scaleX = 1 + 0.15 * Math.sin(time / 80);
-        } else if (this.enemyType === 'ghost') {
-            this.y += 0.25 * Math.sin(time / 150); // Bay bổng
+        // Hiệu ứng sống động chibi — squash/stretch theo baseScale (rẻ, tính trong update).
+        // Chỉ ghi scale sau khi pop-in xong để không đè hiệu ứng xuất hiện.
+        const bs = this.baseScale;
+        const wob = Math.sin(time / 110 + this.bobOffset);
+        if (this.enemyType === 'ghost') {
+            this.y += 0.25 * Math.sin(time / 150 + this.bobOffset); // Bay bổng (không đụng scale)
+        } else if (this.spawnAnimDone) {
+            if (this.enemyType === 'slime' && this.aiState !== 'leap_prep') {
+                // Slime nhún nảy: cao thì hẹp, thấp thì bè
+                this.scaleY = bs * (1 + 0.14 * wob);
+                this.scaleX = bs * (1 - 0.10 * wob);
+            } else if (this.enemyType === 'bat') {
+                // Dơi vỗ cánh nhanh
+                this.scaleX = bs * (1 + 0.16 * Math.sin(time / 80 + this.bobOffset));
+            } else if (this.isBoss) {
+                // Boss: nhịp thở phình nhẹ (không đụng tâm điểm yếu vì offset cố định)
+                const breathe = bs * (1 + 0.035 * Math.sin(time / 260 + this.bobOffset));
+                this.scaleX = breathe;
+                this.scaleY = breathe;
+            } else if (this.enemyType !== 'crystal_spike' && this.enemyType !== 'lich_orb') {
+                // Bob thở nhẹ chung cho các quái còn lại (lệch pha để đám đông không đồng bộ)
+                const breathe = bs * (1 + 0.05 * wob);
+                this.scaleX = breathe;
+                this.scaleY = breathe;
+            }
+        }
+
+        // Quay mặt trái/phải theo người chơi (giữ thẳng đứng, mặt chibi luôn đọc đúng)
+        this.setFlipX(player.x < this.x);
+
+        // Bóng đổ bám theo chân quái
+        if (this.shadow && this.shadow.visible) {
+            this.shadow.setPosition(this.x, this.y + this.displayHeight * 0.42);
         }
 
         if (this.isBoss) {
@@ -341,7 +411,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
                 this.clearTint();
                 if (this.isBoss) {
                     if (this.isShieldActive) this.setTint(0xff00ff);
-                    else this.setTint(0xffaa00);
+                    else this.setTint(0xffd9a0);
                 }
             }
         });
@@ -385,6 +455,28 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         const color = this.isBoss ? 0xffea00 : (this.enemyType === 'slime' ? 0xff3333 : (this.enemyType === 'bat' ? 0x9933ff : 0x777777));
         (this.scene as any).spawnExplosionParticles(this.x, this.y, color, this.isBoss ? 24 : 8);
+
+        // Ẩn bóng đổ ngay khi chết
+        if (this.shadow) this.shadow.setVisible(false);
+
+        // "Poof" co nhỏ: vẽ trên một sprite tách rời để không trì hoãn disableBody
+        // (va chạm phải dừng tức thì). Bỏ qua với bẫy/orb để gọn.
+        if (this.enemyType !== 'crystal_spike' && this.enemyType !== 'lich_orb' && this.scene.textures.exists(this.texture.key)) {
+            const poof = this.scene.add.sprite(this.x, this.y, this.texture.key);
+            poof.setScale(this.scaleX, this.scaleY);
+            poof.setFlipX(this.flipX);
+            poof.setDepth(this.depth);
+            poof.setTint(0xffffff);
+            this.scene.tweens.add({
+                targets: poof,
+                scaleX: this.baseScale * 1.35,
+                scaleY: this.baseScale * 0.2,
+                alpha: 0,
+                duration: 180,
+                ease: 'Quad.easeOut',
+                onComplete: () => poof.destroy()
+            });
+        }
 
         const playScene = this.scene as any;
 

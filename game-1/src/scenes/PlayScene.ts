@@ -555,6 +555,7 @@ export class PlayScene extends Phaser.Scene {
 
             for (let i = 0; i < lvl; i++) {
                 const s = this.physics.add.sprite(this.player.x, this.player.y, 'shield_texture');
+                s.setDepth(3); // Ngang nhân vật để không bị quái (depth 3) che mất
                 if (s.body) {
                     (s.body as Phaser.Physics.Arcade.Body).setCircle(8);
                 }
