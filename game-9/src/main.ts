@@ -227,7 +227,10 @@ function renderGuide(): void {
 
   $('guide-body').innerHTML = objective + controls + survival + dark + zones + creatures + res + ups + tips;
 }
-$('btn-guide').addEventListener('click', () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; });
+// One opener, two triggers (menu + in-game pause) — same modal, layered on top (z-50 > pause z-40).
+const openGuide = () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; };
+$('btn-guide').addEventListener('click', openGuide);
+$('btn-pause-guide').addEventListener('click', openGuide);
 $('btn-guide-close').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });
 
 // ---- Dead / win ----
