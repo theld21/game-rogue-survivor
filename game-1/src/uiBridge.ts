@@ -15,126 +15,13 @@ function updateSliderTrack(slider: HTMLInputElement, color: string): void {
     slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #1d1442 ${percent}%, #1d1442 100%)`;
 }
 
-function drawKnight(ctx: CanvasRenderingContext2D): void {
+// Vẽ nhân vật bằng ĐÚNG texture trong game (char_knight/mage/ranger 96×96)
+// đã được TextureGenerator tạo và nạp vào UIBridge.heroImages từ MenuScene.
+// Đảm bảo ảnh ở home + chọn hệ trùng khít với nhân vật khi vào trận.
+function drawHero(ctx: CanvasRenderingContext2D, char: 'knight' | 'mage' | 'ranger'): void {
     ctx.clearRect(0, 0, 96, 96);
-    // Body (Red triangle)
-    ctx.fillStyle = '#ff5470';
-    ctx.beginPath();
-    ctx.moveTo(48, 48);
-    ctx.lineTo(20, 92);
-    ctx.lineTo(76, 92);
-    ctx.closePath();
-    ctx.fill();
-
-    // Head (Blue circle)
-    ctx.fillStyle = '#22e3ff';
-    ctx.beginPath();
-    ctx.arc(48, 48, 36, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Head outline (White)
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(48, 48, 38, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Shield (Left circle)
-    ctx.fillStyle = '#dddddd';
-    ctx.beginPath();
-    ctx.arc(16, 48, 12, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#888888';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(16, 48, 12, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Sword (Right line)
-    ctx.strokeStyle = '#ffd83d';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(72, 48);
-    ctx.lineTo(92, 24);
-    ctx.stroke();
-}
-
-function drawMage(ctx: CanvasRenderingContext2D): void {
-    ctx.clearRect(0, 0, 96, 96);
-    // Body (Purple circle)
-    ctx.fillStyle = '#9d6bff';
-    ctx.beginPath();
-    ctx.arc(48, 48, 36, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Head outline (Cyan)
-    ctx.strokeStyle = '#22e3ff';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(48, 48, 38, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Hat (Dark triangle)
-    ctx.fillStyle = '#1a1a1a';
-    ctx.beginPath();
-    ctx.moveTo(24, 28);
-    ctx.lineTo(48, 0);
-    ctx.lineTo(72, 28);
-    ctx.closePath();
-    ctx.fill();
-
-    // Hat gold band
-    ctx.strokeStyle = '#ffd83d';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(20, 28);
-    ctx.lineTo(76, 28);
-    ctx.stroke();
-
-    // Staff
-    ctx.strokeStyle = '#999999';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(68, 64);
-    ctx.lineTo(80, 20);
-    ctx.stroke();
-
-    // Staff gem
-    ctx.fillStyle = '#ff4fa3';
-    ctx.beginPath();
-    ctx.arc(80, 20, 10, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function drawRanger(ctx: CanvasRenderingContext2D): void {
-    ctx.clearRect(0, 0, 96, 96);
-    // Head (Green circle)
-    ctx.fillStyle = '#9dff5c';
-    ctx.beginPath();
-    ctx.arc(48, 48, 36, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Border (White)
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(48, 48, 38, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Cloak/hood (Dark green arc)
-    ctx.fillStyle = 'rgba(26, 102, 51, 0.85)';
-    ctx.beginPath();
-    ctx.arc(48, 48, 36, Math.PI, 0, false);
-    ctx.lineTo(48, 24);
-    ctx.closePath();
-    ctx.fill();
-
-    // Bow (Brown arc on left)
-    ctx.strokeStyle = '#feb47b';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(16, 48, 20, -Math.PI / 2, Math.PI / 2, true);
-    ctx.stroke();
+    const img = UIBridge.heroImages[char];
+    if (img) ctx.drawImage(img, 0, 0, 96, 96);
 }
 
 function drawSlime(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number = 1.0): void {
@@ -230,18 +117,21 @@ function drawBulletRanger(ctx: CanvasRenderingContext2D, x: number, y: number, s
 }
 
 function drawCharacterAt(ctx: CanvasRenderingContext2D, char: 'knight' | 'mage' | 'ranger', x: number, y: number, scale: number = 1.0): void {
+    const img = UIBridge.heroImages[char];
+    if (!img) return;
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(scale, scale);
     ctx.translate(-48, -48);
-    if (char === 'knight') drawKnight(ctx);
-    else if (char === 'mage') drawMage(ctx);
-    else if (char === 'ranger') drawRanger(ctx);
+    ctx.drawImage(img, 0, 0, 96, 96);
     ctx.restore();
 }
 
 export const UIBridge = {
     simAnimFrame: null as number | null,
+
+    // Ảnh nhân vật thật trong game (lấy từ texture char_*); MenuScene nạp vào.
+    heroImages: {} as Record<'knight' | 'mage' | 'ranger', CanvasImageSource | null>,
 
     clearSimulation(): void {
         if (this.simAnimFrame !== null) {
@@ -445,10 +335,7 @@ export const UIBridge = {
         if (previewCanvas) {
             const ctx = previewCanvas.getContext('2d');
             if (ctx) {
-                ctx.clearRect(0, 0, 96, 96);
-                if (selectedChar === 'knight') drawKnight(ctx);
-                else if (selectedChar === 'mage') drawMage(ctx);
-                else if (selectedChar === 'ranger') drawRanger(ctx);
+                drawHero(ctx, selectedChar);
             }
         }
 
@@ -484,10 +371,7 @@ export const UIBridge = {
             if (avatarCanvas) {
                 const ctx = avatarCanvas.getContext('2d');
                 if (ctx) {
-                    ctx.clearRect(0, 0, 96, 96);
-                    if (char === 'knight') drawKnight(ctx);
-                    else if (char === 'mage') drawMage(ctx);
-                    else if (char === 'ranger') drawRanger(ctx);
+                    drawHero(ctx, char);
                 }
             }
 
@@ -630,10 +514,7 @@ export const UIBridge = {
             if (canvas) {
                 const ctx = canvas.getContext('2d');
                 if (ctx) {
-                    ctx.clearRect(0, 0, 96, 96);
-                    if (c === 'knight') drawKnight(ctx);
-                    else if (c === 'mage') drawMage(ctx);
-                    else if (c === 'ranger') drawRanger(ctx);
+                    drawHero(ctx, c);
                 }
             }
         });

@@ -6,6 +6,7 @@ import Phaser from 'phaser';
 import { SAVE_KEYS, getSaveData, saveKeyData, getSaveString, saveString, GameState } from '../config';
 import { UIBridge } from '../uiBridge';
 import { SoundEffects } from '../utils/SoundEffects';
+import { TextureGenerator } from '../utils/TextureGenerator';
 
 export class MenuScene extends Phaser.Scene {
     private totalGold!: number;
@@ -13,6 +14,7 @@ export class MenuScene extends Phaser.Scene {
     private upgradeSpeedLvl!: number;
     private upgradeDamageLvl!: number;
     private starsList: Phaser.GameObjects.Arc[] = [];
+    private bgGraphics?: Phaser.GameObjects.Graphics;
     private currentView: 'intro' | 'menu' | 'shop' | 'settings' = 'intro';
 
     constructor() {
@@ -44,9 +46,20 @@ export class MenuScene extends Phaser.Scene {
         const width = this.cameras.main.width;
         const height = this.cameras.main.height;
 
-        // Dừng toàn bộ các instance nhạc cũ để tránh bị lặp đè lên nhau
-        this.sound.stopByKey('bgm_ingame');
-        this.sound.stopByKey('bgm_home');
+        // Tạo các texture nhân vật thật (idempotent) rồi nạp ảnh nguồn 96×96 cho UIBridge
+        // để home + chọn hệ vẽ ĐÚNG hình nhân vật như khi vào trận.
+        TextureGenerator.generateAll(this);
+        (['knight', 'mage', 'ranger'] as const).forEach(type => {
+            const key = 'char_' + type;
+            UIBridge.heroImages[type] = this.textures.exists(key)
+                ? (this.textures.get(key).getSourceImage() as CanvasImageSource)
+                : null;
+        });
+
+        // Gỡ bỏ (không chỉ dừng) các instance nhạc cũ: nhạc loop bị stop vẫn nằm
+        // trong sound.sounds[] và tích tụ qua mỗi lần chuyển Menu↔Play → dùng removeByKey.
+        this.sound.removeByKey('bgm_ingame');
+        this.sound.removeByKey('bgm_home');
 
         // Bắt đầu phát luồng nhạc mới
         const vol = getSaveData('survivor_bgm_volume', 80) / 100;
@@ -316,9 +329,10 @@ export class MenuScene extends Phaser.Scene {
 
     private handleResize(gameSize: Phaser.Structs.Size): void {
         if (!this.cameras || !this.cameras.main) return;
-        // Vẽ lại phông nền sao khi xoay màn hình
+        // Vẽ lại phông nền sao khi xoay màn hình (huỷ cả gradient cũ để không rò rỉ)
         this.starsList.forEach(s => s.destroy());
         this.starsList = [];
+        if (this.bgGraphics) { this.bgGraphics.destroy(); this.bgGraphics = undefined; }
         this.createCanvasStarsBackground(gameSize.width, gameSize.height);
 
         // Vẽ lại UI HTML theo màn hình hiện hành
@@ -335,6 +349,7 @@ export class MenuScene extends Phaser.Scene {
 
     private createCanvasStarsBackground(w: number, h: number): void {
         const bgGraphics = this.add.graphics();
+        this.bgGraphics = bgGraphics;
         // Gradient sunset-neon: nightInk (trên) -> panelInk + ánh skyMid (dưới)
         bgGraphics.fillGradientStyle(0x140a2e, 0x140a2e, 0x2a1a5e, 0x1d1442, 1);
         bgGraphics.fillRect(0, 0, w, h);

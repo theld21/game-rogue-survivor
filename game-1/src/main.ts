@@ -7,6 +7,7 @@ import Phaser from 'phaser';
 import { MenuScene } from './scenes/MenuScene';
 import { PlayScene } from './scenes/PlayScene';
 import { UIBridge } from './uiBridge';
+import { getDpr } from './utils/viewport';
 import { createIcons, Play, Shield, Coins, Heart, Sword, Swords, Info, Pause, RefreshCw, LogOut, Sparkles, Target, Zap, Clock, Trophy, BookOpen, X } from 'lucide';
 
 // Khởi tạo các icon Lucide và đưa vào đối tượng window toàn cục
@@ -29,7 +30,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // 1/dpr (no letterbox) — the world is derived from the viewport and several DOM
 // overlays (player/boss HP bars) divide screen coords by dpr to line up with the
 // canvas, which only holds when base aspect == viewport aspect.
-const dpr = Math.min(window.devicePixelRatio || 1, 2);
+const dpr = getDpr();
 
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.WEBGL,
@@ -61,7 +62,7 @@ const game = new Phaser.Game(config);
 // aspect → FIT scale stays 1/dpr, no letterbox, DOM overlays stay aligned). This
 // fires the Scale RESIZE event that PlayScene.handleResize already listens to.
 const handleViewportChange = () => {
-    const currentDpr = Math.min(window.devicePixelRatio || 1, 2);
+    const currentDpr = getDpr();
     game.scale.resize(window.innerWidth * currentDpr, window.innerHeight * currentDpr);
 };
 window.addEventListener('resize', handleViewportChange);

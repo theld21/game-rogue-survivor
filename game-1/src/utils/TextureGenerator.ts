@@ -139,8 +139,6 @@ export class TextureGenerator {
             g.beginPath(); g.moveTo(26, 18); g.lineTo(70, 18); g.lineTo(66, 23); g.lineTo(30, 23); g.closePath(); g.fill();
             g.lineStyle(3, OUTLINE, 1);
             g.beginPath(); g.moveTo(20, 30); g.lineTo(76, 30); g.strokePath();
-            // mặt dũng cảm
-            face(g, 48, 48, 13, 8, { angry: true });
         });
 
         // Pháp sư (Mage) — áo VIOLET, mũ chóp, quyền trượng HỒNG (trim)
@@ -167,8 +165,6 @@ export class TextureGenerator {
             // vành mũ hồng
             g.fillStyle(PINK, 1); g.fillRect(18, 30, 60, 6);
             g.lineStyle(2.5, OUTLINE, 1); g.strokeRect(18, 30, 60, 6);
-            // mắt thông thái
-            face(g, 48, 50, 12, 7.5);
         });
 
         // Cung thủ (Ranger) — áo LIME, mũ trùm, cung gỗ
@@ -193,8 +189,6 @@ export class TextureGenerator {
             g.fillStyle(0x4aa829, 1);
             g.fillTriangle(50, 16, 40, 30, 60, 30);
             g.lineStyle(3, OUTLINE, 1); g.strokeTriangle(50, 16, 40, 30, 60, 30);
-            // mắt lanh lợi
-            face(g, 52, 54, 12, 7.5);
             // mũi tên sẵn sàng tay phải
             g.lineStyle(3, YELLOW, 1);
             g.beginPath(); g.moveTo(70, 60); g.lineTo(92, 60); g.strokePath();

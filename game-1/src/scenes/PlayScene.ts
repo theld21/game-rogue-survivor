@@ -14,6 +14,7 @@ import { CharacterType, CHARACTER_CONFIG } from '../utils/CharacterConfig';
 import { SkillManager } from '../utils/SkillManager';
 import { Joystick } from '../utils/Joystick';
 import { SoundEffects } from '../utils/SoundEffects';
+import { getDpr } from '../utils/viewport';
 
 import {
     handleBulletHitEnemy,
@@ -183,7 +184,7 @@ export class PlayScene extends Phaser.Scene {
 
         // Tính toán Zoom tỉ lệ cho màn hình nhỏ và nhân với dpr để đồng bộ toạ độ
         const minSide = Math.min(window.innerWidth, window.innerHeight);
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = getDpr();
         let baseZoom = 1.0;
         if (minSide < 600) {
             baseZoom = Math.max(0.6, minSide / 720);
@@ -214,9 +215,10 @@ export class PlayScene extends Phaser.Scene {
         const virtualWidth = width / this.zoomVal;
         const virtualHeight = height / this.zoomVal;
 
-        // Dừng toàn bộ các instance nhạc cũ để tránh bị lặp đè lên nhau
-        this.sound.stopByKey('bgm_home');
-        this.sound.stopByKey('bgm_ingame');
+        // Gỡ bỏ (không chỉ dừng) các instance nhạc cũ: nhạc loop bị stop vẫn nằm
+        // trong sound.sounds[] và tích tụ qua mỗi lần chuyển Menu↔Play → dùng removeByKey.
+        this.sound.removeByKey('bgm_home');
+        this.sound.removeByKey('bgm_ingame');
 
         // Bắt đầu phát luồng nhạc chơi game mới
         const vol = getSaveData('survivor_bgm_volume', 80) / 100;
@@ -266,6 +268,16 @@ export class PlayScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.collectiblesGroup, (p, c) => handlePlayerCollectItem(this, p as Player, c as Collectible), undefined, this);
         this.physics.add.overlap(this.player, this.enemyBulletsGroup, (p, eb) => handleEnemyBulletHitPlayer(this, p as Player, eb as Phaser.Physics.Arcade.Sprite), undefined, this);
 
+        // Va chạm Ngọc khiên xoay ↔ quái: đăng ký MỘT lần ở đây (group đã tồn tại).
+        // Trước đây nó được đăng ký lại mỗi lần đổi số khiên trong updateOrbitingShields,
+        // khiến collider chồng chất (rò rỉ) và sát thương khiên bị áp N lần.
+        this.physics.add.overlap(this.shieldsGroup, this.enemiesGroup, (shield: any, enemy: any) => {
+            if (enemy.active) {
+                enemy.takeDamage(this.bulletDamage * 0.35);
+                this.spawnExplosionParticles(enemy.x, enemy.y, 0x22e3ff, 2);
+            }
+        }, undefined, this);
+
         this.joystick = new Joystick(this, this.zoomVal);
 
         const pauseBtn = document.getElementById('pause-btn');
@@ -300,6 +312,9 @@ export class PlayScene extends Phaser.Scene {
         this.events.once('shutdown', () => {
             this.scale.off('resize', this.handleResize, this);
             if (this.backdropRT) { this.backdropRT.destroy(); this.backdropRT = undefined; }
+            // Gỡ DOM listener trỏ vào scene cũ (giữ scene sống sau restart)
+            const pb = document.getElementById('pause-btn');
+            if (pb) pb.onclick = null;
         });
     }
 
@@ -372,7 +387,7 @@ export class PlayScene extends Phaser.Scene {
         const worldYHead = this.player.y - 36;
         const screenY = centerY + (worldYHead - camera.scrollY - centerY) * camera.zoom - 15;
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = getDpr();
         UIBridge.updatePlayerHP(
             screenX / dpr,
             screenY / dpr,
@@ -399,7 +414,7 @@ export class PlayScene extends Phaser.Scene {
             const worldYHead = boss.y - 45;
             const screenY = centerY + (worldYHead - camera.scrollY - centerY) * camera.zoom;
 
-            const dpr = window.devicePixelRatio || 1;
+            const dpr = getDpr();
             UIBridge.updateBossHP(screenX / dpr, screenY / dpr, boss.hp, boss.maxHp, true);
         } else {
             // Boss đã bị tiêu diệt
@@ -488,9 +503,16 @@ export class PlayScene extends Phaser.Scene {
         let closest: Enemy | null = null;
         let minDist = Infinity;
 
+        // Chỉ ngắm quái đang HIỆN trên màn hình (hoặc sát mép) — không bắn vào
+        // thứ chưa nhìn thấy. worldView đã tính sẵn zoom + scroll của camera.
+        const view = this.cameras.main.worldView;
+        const m = 60; // biên nhỏ để quái ở rìa màn vẫn được ngắm
+        const left = view.x - m, right = view.right + m, top = view.y - m, bottom = view.bottom + m;
+
         this.enemiesGroup.getChildren().forEach(item => {
             const e = item as Enemy;
             if (e.active && e.enemyType !== 'crystal_spike') {
+                if (e.x < left || e.x > right || e.y < top || e.y > bottom) return;
                 const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
                 if (d < minDist) {
                     minDist = d;
@@ -593,13 +615,6 @@ export class PlayScene extends Phaser.Scene {
                 this.shieldsGroup.add(s);
                 this.shieldsList.push(s);
             }
-
-            this.physics.add.overlap(this.shieldsGroup, this.enemiesGroup, (shield: any, enemy: any) => {
-                if (enemy.active) {
-                    enemy.takeDamage(this.bulletDamage * 0.35);
-                    this.spawnExplosionParticles(enemy.x, enemy.y, 0x22e3ff, 2);
-                }
-            }, undefined, this);
         }
 
         this.shieldAngle += 0.045;
@@ -777,7 +792,7 @@ export class PlayScene extends Phaser.Scene {
         const screenHeight = this.cameras.main.height;
         const z = this.zoomVal;
 
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = getDpr();
         const baseZoom = z / dpr;
 
         // Tính vị trí Y tương ứng với -60px và 170px của CSS pixels, nhân hệ số dpr và chia cho zoom thực tế z
@@ -862,7 +877,7 @@ export class PlayScene extends Phaser.Scene {
         this.cameras.main.setSize(width, height);
 
         // Cập nhật lại Zoom trên di động khi xoay màn hình (sử dụng kích thước CSS để tính zoom)
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = getDpr();
         const cssWidth = width / dpr;
         const cssHeight = height / dpr;
         const minSideCss = Math.min(cssWidth, cssHeight);
