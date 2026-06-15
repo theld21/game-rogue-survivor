@@ -1,14 +1,78 @@
 @import "tailwindcss";
 
+/* =====================================================================
+   SUNSET-NEON DESIGN SYSTEM (đồng bộ game-6)
+   Một bảng màu thống nhất, glass hiện đại, bo tròn, không chỏi màu.
+   Remap cả token tuỳ biến lẫn vài shade Tailwind tiêu chuẩn mà DOM dùng,
+   để index.html + DOM sinh bởi uiBridge/MenuScene đều ăn theo bảng màu này.
+   ===================================================================== */
 @theme {
-  --color-cyber: #00f0ff;
-  --color-neonpink: #ff007f;
-  --color-darkbg: #07050f;
-  --color-cardbg: rgba(13, 10, 28, 0.45);
+  /* token tuỳ biến cũ -> bảng màu sunset-neon */
+  --color-cyber: #22e3ff;
+  --color-neonpink: #ff4fa3;
+  --color-darkbg: #140a2e;
+  --color-cardbg: rgba(29, 20, 66, 0.55);
 
-  --shadow-neon: 0 0 20px rgba(0, 240, 255, 0.25);
-  --shadow-neonpink: 0 0 20px rgba(255, 0, 127, 0.25);
-  --shadow-gold: 0 0 20px rgba(250, 204, 21, 0.3);
+  --shadow-neon: 0 0 18px rgba(34, 227, 255, 0.30);
+  --shadow-neonpink: 0 0 18px rgba(255, 79, 163, 0.30);
+  --shadow-gold: 0 0 18px rgba(255, 216, 61, 0.30);
+
+  /* palette tokens (tiện dùng nếu cần) */
+  --color-nightInk: #140a2e;
+  --color-panelInk: #1d1442;
+  --color-skyTop: #2a1a5e;
+  --color-skyMid: #7b3fa0;
+  --color-skyLow: #ff7e5f;
+  --color-duskGlow: #feb47b;
+  --color-neonCyan: #22e3ff;
+  --color-neonPink: #ff4fa3;
+  --color-neonLime: #9dff5c;
+  --color-neonYellow: #ffd83d;
+  --color-neonOrange: #ff8a3d;
+  --color-neonViolet: #9d6bff;
+
+  /* Override các shade Tailwind tiêu chuẩn mà UI đang dùng -> kéo về tone bảng màu */
+  --color-cyan-300: #7af0ff;
+  --color-cyan-400: #22e3ff;
+  --color-cyan-500: #22c3e6;
+  --color-cyan-900: #173a52;
+  --color-cyan-950: #102a3a;
+  --color-sky-400: #22e3ff;
+  --color-yellow-400: #ffd83d;
+  --color-yellow-500: #f5c81f;
+  --color-yellow-950: #3a2e08;
+  --color-amber-300: #ffe27a;
+  --color-amber-400: #ffd83d;
+  --color-amber-500: #ff8a3d;
+  --color-amber-950: #3a2208;
+  --color-fuchsia-400: #ff6fb8;
+  --color-fuchsia-500: #ff4fa3;
+  --color-fuchsia-950: #3a0f29;
+  --color-purple-500: #9d6bff;
+  --color-violet-400: #9d6bff;
+  --color-rose-400: #ff7090;
+  --color-rose-500: #ff5470;
+  --color-rose-950: #3a0f1c;
+  --color-red-400: #ff7090;
+  --color-red-500: #ff5470;
+  --color-red-950: #3a0f1c;
+  --color-emerald-400: #4dffa0;
+  --color-emerald-500: #2fe089;
+  --color-emerald-950: #0a3a26;
+  --color-green-400: #9dff5c;
+  --color-green-500: #6fd83a;
+  --color-green-950: #1a3a0f;
+
+  /* Slate neutrals -> tím-đen ấm (đồng bộ nền violet, bớt lạnh) */
+  --color-slate-200: #e7e2f5;
+  --color-slate-300: #cfc8e6;
+  --color-slate-400: #a99fce;
+  --color-slate-500: #8a7fb4;
+  --color-slate-600: #6b6094;
+  --color-slate-700: #4a3f72;
+  --color-slate-800: #322852;
+  --color-slate-900: #20183f;
+  --color-slate-950: #160e30;
 }
 
 @layer base {
@@ -18,12 +82,12 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: #05020c;
+    background-color: #140a2e;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
-    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.01em;
+    font-family: 'Baloo 2', 'Outfit', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0;
   }
 
   #game-wrapper {
@@ -44,9 +108,6 @@
     overflow: hidden;
   }
 
-  /* Let Phaser's FIT scale + autoCenter size and center the canvas. Constrain it
-     to the container so it can never overflow; do NOT force 100% (that would
-     stretch it and break aspect/centering). */
   #game-container canvas {
     display: block;
     max-width: 100%;
@@ -77,158 +138,120 @@
   }
 }
 
-/* --- CYBERPUNK / CYBER-FANTASY UI DESIGN SYSTEM --- */
+/* --- FONT HELPERS (game-6 style) --- */
+.font-display { font-family: 'Fredoka', 'Baloo 2', sans-serif; }
+.font-body    { font-family: 'Baloo 2', sans-serif; }
+.font-mono    { font-family: 'Share Tech Mono', monospace; }
 
-/* Retro-futuristic Scanline Overlay */
-.ui-overlay-blocking::before {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 28, 0) 50%, rgba(0, 0, 0, 0.18) 50%);
-  z-index: 100;
-  background-size: 100% 3px;
-  pointer-events: none;
-  opacity: 0.45;
-}
+/* --- SUNSET-NEON UI DESIGN SYSTEM --- */
 
-/* Pulsing grid background for modals */
+/* Soft pulsing dotted background for modals (rất nhẹ, tone violet) */
 .cyber-grid-bg {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 240, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+  background-size: 36px 36px;
+  background-image:
+    radial-gradient(circle, rgba(157, 107, 255, 0.05) 1px, transparent 1.4px);
 }
 
-/* Cyber panels with Neon borders & Glassmorphism */
+/* Glass panels (mềm, bo tròn, blur) */
 .cyber-panel {
-  background: rgba(9, 6, 22, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.65);
+  background: rgba(29, 20, 66, 0.66);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
   position: relative;
 }
 
 .cyber-panel-cyan {
-  border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 0 25px rgba(0, 240, 255, 0.06), inset 0 0 20px rgba(0, 240, 255, 0.03);
+  border-color: rgba(34, 227, 255, 0.22);
 }
-
 .cyber-panel-purple {
-  border-color: rgba(217, 70, 239, 0.3);
-  box-shadow: 0 0 25px rgba(217, 70, 239, 0.06), inset 0 0 20px rgba(217, 70, 239, 0.03);
+  border-color: rgba(157, 107, 255, 0.22);
 }
-
 .cyber-panel-green {
-  border-color: rgba(34, 197, 94, 0.3);
-  box-shadow: 0 0 25px rgba(34, 197, 94, 0.06), inset 0 0 20px rgba(34, 197, 94, 0.03);
+  border-color: rgba(157, 255, 92, 0.22);
 }
 
-/* Glowing text */
+/* Glowing text (mềm hơn) */
 .text-glow-cyan {
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.65), 0 0 16px rgba(0, 240, 255, 0.3);
+  text-shadow: 0 0 12px rgba(34, 227, 255, 0.5);
 }
 .text-glow-purple {
-  text-shadow: 0 0 8px rgba(217, 70, 239, 0.65), 0 0 16px rgba(217, 70, 239, 0.3);
+  text-shadow: 0 0 12px rgba(157, 107, 255, 0.5);
 }
 .text-glow-green {
-  text-shadow: 0 0 8px rgba(34, 197, 94, 0.65), 0 0 16px rgba(34, 197, 94, 0.3);
+  text-shadow: 0 0 12px rgba(157, 255, 92, 0.5);
 }
 .text-glow-gold {
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.7), 0 0 16px rgba(251, 191, 36, 0.35);
+  text-shadow: 0 0 12px rgba(255, 216, 61, 0.55);
 }
 
-/* Cyber buttons */
+/* Buttons — rounded neon, friendly */
 .cyber-btn {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Fredoka', 'Baloo 2', sans-serif;
   text-transform: uppercase;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.18s ease, background 0.18s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  border-radius: 16px;
 }
-
-.cyber-btn::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
-  transition: all 0.5s ease;
-}
-
-.cyber-btn:hover::after {
-  left: 100%;
-}
+.cyber-btn:active { transform: scale(0.96); filter: brightness(1.12); }
 
 .cyber-btn-cyan {
-  background: rgba(0, 240, 255, 0.08);
-  border: 1.5px solid #00f0ff;
-  color: #00f0ff;
-  text-shadow: 0 0 4px rgba(0, 240, 255, 0.5);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.15);
+  background: linear-gradient(90deg, #22e3ff, #9dff5c);
+  border: none;
+  color: #140a2e;
+  box-shadow: 0 0 18px rgba(34, 227, 255, 0.35);
 }
 .cyber-btn-cyan:hover {
-  background: #00f0ff;
-  color: #05020c;
-  box-shadow: 0 0 22px rgba(0, 240, 255, 0.5);
-  text-shadow: none;
+  box-shadow: 0 0 26px rgba(34, 227, 255, 0.55);
 }
 
 .cyber-btn-purple {
-  background: rgba(217, 70, 239, 0.08);
-  border: 1.5px solid #d946ef;
-  color: #d946ef;
-  text-shadow: 0 0 4px rgba(217, 70, 239, 0.5);
-  box-shadow: 0 0 12px rgba(217, 70, 239, 0.15);
+  background: linear-gradient(90deg, #9d6bff, #ff4fa3);
+  border: none;
+  color: #140a2e;
+  box-shadow: 0 0 18px rgba(157, 107, 255, 0.35);
 }
 .cyber-btn-purple:hover {
-  background: #d946ef;
-  color: #05020c;
-  box-shadow: 0 0 22px rgba(217, 70, 239, 0.5);
-  text-shadow: none;
+  box-shadow: 0 0 26px rgba(157, 107, 255, 0.55);
 }
 
 .cyber-btn-green {
-  background: rgba(34, 197, 94, 0.08);
-  border: 1.5px solid #22c55e;
-  color: #22c55e;
-  text-shadow: 0 0 4px rgba(34, 197, 94, 0.5);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+  background: linear-gradient(90deg, #9dff5c, #4dffa0);
+  border: none;
+  color: #140a2e;
+  box-shadow: 0 0 18px rgba(157, 255, 92, 0.35);
 }
 .cyber-btn-green:hover {
-  background: #22c55e;
-  color: #05020c;
-  box-shadow: 0 0 22px rgba(34, 197, 94, 0.5);
-  text-shadow: none;
+  box-shadow: 0 0 26px rgba(157, 255, 92, 0.55);
 }
 
 .cyber-btn-gold {
-  background: linear-gradient(135deg, #fbbf24, #d97706);
-  border: 1.5px solid #fbbf24;
-  color: #05020c;
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.3);
+  background: linear-gradient(90deg, #ffd83d, #ff8a3d);
+  border: none;
+  color: #140a2e;
+  box-shadow: 0 0 18px rgba(255, 216, 61, 0.35);
 }
 .cyber-btn-gold:hover {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
-  box-shadow: 0 0 24px rgba(251, 191, 36, 0.65);
+  box-shadow: 0 0 26px rgba(255, 216, 61, 0.55);
 }
 
 .cyber-btn-dark {
-  background: rgba(14, 10, 32, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   color: #ffffff;
 }
 .cyber-btn-dark:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(34, 227, 255, 0.4);
 }
 
-/* Energy Badge Container */
+/* Energy Badge Container (preview ring) */
 .energy-badge {
   display: flex;
   align-items: center;
@@ -237,45 +260,42 @@
   position: relative;
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
 }
-
 .energy-badge-cyan {
-  background: rgba(0, 240, 255, 0.12);
-  border: 2px solid #00f0ff;
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+  background: rgba(34, 227, 255, 0.12);
+  border: 2px solid #22e3ff;
+  box-shadow: 0 0 16px rgba(34, 227, 255, 0.35);
 }
-
 .energy-badge-purple {
-  background: rgba(217, 70, 239, 0.12);
-  border: 2px solid #d946ef;
-  box-shadow: 0 0 16px rgba(217, 70, 239, 0.35);
+  background: rgba(157, 107, 255, 0.12);
+  border: 2px solid #9d6bff;
+  box-shadow: 0 0 16px rgba(157, 107, 255, 0.35);
 }
-
 .energy-badge-green {
-  background: rgba(34, 197, 94, 0.12);
-  border: 2px solid #22c55e;
-  box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
+  background: rgba(157, 255, 92, 0.12);
+  border: 2px solid #9dff5c;
+  box-shadow: 0 0 16px rgba(157, 255, 92, 0.35);
 }
 
 /* Hologram Preview capsule */
 .hologram-capsule {
   position: relative;
-  border-radius: 32px;
-  background: linear-gradient(to bottom, rgba(0, 240, 255, 0.06), rgba(0, 240, 255, 0.01));
-  border-left: 1.5px solid rgba(0, 240, 255, 0.2);
-  border-right: 1.5px solid rgba(0, 240, 255, 0.2);
-  box-shadow: inset 0 0 25px rgba(0, 240, 255, 0.08);
+  border-radius: 28px;
+  background: linear-gradient(to bottom, rgba(34, 227, 255, 0.06), rgba(157, 107, 255, 0.02));
+  border-left: 1px solid rgba(34, 227, 255, 0.18);
+  border-right: 1px solid rgba(34, 227, 255, 0.18);
+  box-shadow: inset 0 0 25px rgba(34, 227, 255, 0.08);
 }
 .hologram-capsule::after {
   content: '';
   position: absolute;
   bottom: 0; left: 15%; width: 70%; height: 6px;
-  background: #00f0ff;
+  background: #22e3ff;
   filter: blur(5px);
   border-radius: 50%;
-  opacity: 0.65;
+  opacity: 0.55;
 }
 
-/* Stat progress vạch segment */
+/* Stat progress segments */
 .segment-bar {
   display: flex;
   gap: 4px;
@@ -285,63 +305,51 @@
   height: 7px;
   flex: 1;
   background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
+  border-radius: 9999px;
   transition: all 0.35s ease;
 }
 .segment-active-cyan {
-  background: #00f0ff;
-  box-shadow: 0 0 8px #00f0ff, 0 0 15px rgba(0, 240, 255, 0.4);
+  background: #22e3ff;
+  box-shadow: 0 0 8px rgba(34, 227, 255, 0.6);
 }
 .segment-active-gold {
-  background: #fbbf24;
-  box-shadow: 0 0 8px #fbbf24, 0 0 15px rgba(251, 191, 36, 0.4);
+  background: #ffd83d;
+  box-shadow: 0 0 8px rgba(255, 216, 61, 0.6);
 }
 
-/* Glowing headers */
+/* Glowing headers (Fredoka, gradient) */
 .glow-title {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  background: linear-gradient(135deg, #ffffff 20%, #a5f3fc 60%, #00f0ff);
+  font-family: 'Fredoka', 'Baloo 2', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, #22e3ff, #ff4fa3, #ffd83d);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 2px 12px rgba(0, 240, 255, 0.35));
+  filter: drop-shadow(0 0 12px rgba(34, 227, 255, 0.35));
 }
 
-/* Custom Scrollbar for modern panels */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.2);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 79, 163, 0.4);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 79, 163, 0.6);
 }
 
 /* Simulation animations */
 @keyframes sim-projectile-fly {
-  0% {
-    left: 2.25rem;
-    opacity: 1;
-    transform: scale(0.6) rotate(0deg);
-  }
-  90% {
-    left: calc(100% - 3.75rem);
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-  100% {
-    left: calc(100% - 3.75rem);
-    opacity: 0;
-    transform: scale(1.2) rotate(15deg);
-  }
+  0% { left: 2.25rem; opacity: 1; transform: scale(0.6) rotate(0deg); }
+  90% { left: calc(100% - 3.75rem); opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { left: calc(100% - 3.75rem); opacity: 0; transform: scale(1.2) rotate(15deg); }
 }
-
 .sim-projectile {
   position: absolute;
   top: 50%;
@@ -351,39 +359,19 @@
 }
 
 @keyframes sim-target-hit {
-  0%, 100% {
-    transform: scale(1);
-    background-color: rgba(244, 63, 94, 0.2);
-    border-color: rgba(244, 63, 94, 0.3);
-  }
-  20% {
-    transform: scale(0.85) rotate(-8deg);
-    background-color: rgba(239, 68, 68, 0.65);
-    border-color: rgba(239, 68, 68, 0.8);
-  }
-  50% {
-    transform: scale(1.15) rotate(6deg);
-  }
-  80% {
-    transform: scale(0.95) rotate(-2deg);
-  }
+  0%, 100% { transform: scale(1); background-color: rgba(255, 84, 112, 0.2); border-color: rgba(255, 84, 112, 0.3); }
+  20% { transform: scale(0.85) rotate(-8deg); background-color: rgba(255, 84, 112, 0.65); border-color: rgba(255, 84, 112, 0.8); }
+  50% { transform: scale(1.15) rotate(6deg); }
+  80% { transform: scale(0.95) rotate(-2deg); }
 }
-
 .sim-target-shake {
   animation: sim-target-hit 0.35s ease-out forwards;
 }
 
 @keyframes sim-particle-fade {
-  from {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.95;
-  }
-  to {
-    transform: translate(var(--tx), var(--ty)) scale(0.1);
-    opacity: 0;
-  }
+  from { transform: translate(0, 0) scale(1); opacity: 0.95; }
+  to { transform: translate(var(--tx), var(--ty)) scale(0.1); opacity: 0; }
 }
-
 .sim-particle {
   position: absolute;
   border-radius: 50%;
@@ -392,7 +380,7 @@
   animation: sim-particle-fade 0.4s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
 }
 
-/* Custom styling for range input sliders to make them prominent and colorful */
+/* Range input sliders */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -404,8 +392,6 @@ input[type="range"] {
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   transition: all 0.2s ease;
 }
-
-/* Hide track default styling across WebKit and Gecko */
 input[type="range"]::-webkit-slider-runnable-track {
   background: transparent;
   height: 8px;
@@ -415,68 +401,57 @@ input[type="range"]::-moz-range-track {
   height: 8px;
 }
 
-/* Settings sliders: Cyan style thumbs */
+/* Settings sliders: Cyan thumbs */
 #settings-volume-slider::-webkit-slider-thumb,
 #settings-sfx-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   margin-top: -5px;
-  background-color: #00f0ff;
+  background-color: #22e3ff;
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  box-shadow: 0 0 8px #00f0ff, 0 0 16px rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 8px rgba(34, 227, 255, 0.8);
   border: 2px solid #ffffff;
   transition: transform 0.1s ease;
 }
 #settings-volume-slider::-moz-range-thumb,
 #settings-sfx-slider::-moz-range-thumb {
-  background-color: #00f0ff;
+  background-color: #22e3ff;
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  box-shadow: 0 0 8px #00f0ff, 0 0 16px rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 8px rgba(34, 227, 255, 0.8);
   border: 2px solid #ffffff;
   transition: transform 0.1s ease;
 }
 
-/* Pause menu sliders: Gold style thumbs */
+/* Pause menu sliders: Gold thumbs */
 #pause-volume-slider::-webkit-slider-thumb,
 #pause-sfx-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   margin-top: -5px;
-  background-color: #fbbf24;
+  background-color: #ffd83d;
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  box-shadow: 0 0 8px #fbbf24, 0 0 16px rgba(251, 191, 36, 0.6);
+  box-shadow: 0 0 8px rgba(255, 216, 61, 0.8);
   border: 2px solid #ffffff;
   transition: transform 0.1s ease;
 }
 #pause-volume-slider::-moz-range-thumb,
 #pause-sfx-slider::-moz-range-thumb {
-  background-color: #fbbf24;
+  background-color: #ffd83d;
   height: 16px;
   width: 16px;
   border-radius: 50%;
-  box-shadow: 0 0 8px #fbbf24, 0 0 16px rgba(251, 191, 36, 0.6);
+  box-shadow: 0 0 8px rgba(255, 216, 61, 0.8);
   border: 2px solid #ffffff;
   transition: transform 0.1s ease;
 }
 
-/* Hover effects for interactive touch */
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.25);
-  cursor: grab;
-}
-input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.25);
-  cursor: grab;
-}
-input[type="range"]::-webkit-slider-thumb:active {
-  cursor: grabbing;
-}
-input[type="range"]::-moz-range-thumb:active {
-  cursor: grabbing;
-}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); cursor: grab; }
+input[type="range"]::-moz-range-thumb:hover { transform: scale(1.25); cursor: grab; }
+input[type="range"]::-webkit-slider-thumb:active { cursor: grabbing; }
+input[type="range"]::-moz-range-thumb:active { cursor: grabbing; }

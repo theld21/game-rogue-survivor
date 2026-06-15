@@ -34,7 +34,7 @@ const dpr = Math.min(window.devicePixelRatio || 1, 2);
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.WEBGL,
     parent: 'game-container',
-    backgroundColor: '#05030a',
+    backgroundColor: '#140a2e',
     physics: {
         default: 'arcade',
         arcade: {

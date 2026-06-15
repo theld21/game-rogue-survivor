@@ -371,10 +371,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
             this.weakPointIndicator.clear();
             
             // Vẽ hồng tâm mục tiêu quay tròn
-            this.weakPointIndicator.lineStyle(2, 0x00ffff, 0.85);
+            this.weakPointIndicator.lineStyle(2, 0x22e3ff, 0.85);
             this.weakPointIndicator.strokeCircle(0, 0, this.weakPointRadius);
             
-            this.weakPointIndicator.lineStyle(1.5, 0xff0055, 0.95);
+            this.weakPointIndicator.lineStyle(1.5, 0xff4fa3, 0.95);
             this.weakPointIndicator.beginPath();
             this.weakPointIndicator.moveTo(-this.weakPointRadius - 4, 0);
             this.weakPointIndicator.lineTo(-this.weakPointRadius + 4, 0);

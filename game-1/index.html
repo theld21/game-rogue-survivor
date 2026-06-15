@@ -30,7 +30,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Baloo+2:wght@500;600;700&family=Share+Tech+Mono&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 </head>
 
@@ -39,7 +39,7 @@
     <div id="game-wrapper">
         <!-- FIRST TIME INITIAL LOADING SCREEN (WEB SPLASH SCREEN) -->
         <div id="first-load-screen"
-            class="fixed inset-0 bg-[#05020c] z-[100] flex flex-col justify-center items-center transition-opacity duration-500 ease-out pointer-events-auto">
+            class="fixed inset-0 bg-[#140a2e] z-[100] flex flex-col justify-center items-center transition-opacity duration-500 ease-out pointer-events-auto">
             <div class="flex flex-col items-center gap-6">
                 <!-- Logo Image -->
                 <img src="assets/splash_art.png" alt="Rogue Survivor Logo" class="w-48 h-48 md:w-64 md:h-64 object-contain animate-pulse" />
@@ -60,7 +60,7 @@
 
         <!-- 1. GIAO DIỆN CHỜ & CHỌN NHÂN VẬT (MENU UI OVERLAY) -->
         <div id="menu-ui"
-            class="ui-overlay ui-overlay-blocking justify-between px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-b from-[#060312] via-[#0b0720] to-[#04020c] cyber-grid-bg z-50 overflow-y-auto">
+            class="ui-overlay ui-overlay-blocking justify-between px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] bg-gradient-to-b from-[#140a2e] via-[#1d1442] to-[#140a2e] cyber-grid-bg z-50 overflow-y-auto">
             <!-- Header Tiêu đề & Quỹ Vàng -->
             <div class="text-center mt-6">
                 <h1
@@ -152,7 +152,7 @@
                 <div class="grid grid-cols-3 gap-2.5 w-full">
                     <!-- Knight Card -->
                     <button id="intro-knight-btn"
-                        class="flex flex-col items-center p-3 rounded-2xl border bg-slate-950/40 border-slate-800 text-center transition-all select-none cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(0,240,255,0.15)]">
+                        class="flex flex-col items-center p-3 rounded-2xl border bg-slate-950/40 border-slate-800 text-center transition-all select-none cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_10px_rgba(34,227,255,0.15)]">
                         <div
                             class="w-10 h-10 rounded-full bg-cyan-950/30 border border-cyan-500/30 mb-2 flex items-center justify-center text-white text-lg font-bold">
                             ⚔️
@@ -260,7 +260,7 @@
                 <div
                     class="grid grid-cols-2 gap-1 bg-slate-950/60 p-1 rounded-2xl border border-slate-800 mb-4 text-center">
                     <button id="tab-upgrade-btn"
-                        class="py-2 rounded-xl text-[10px] font-bold text-[#00f0ff] bg-cyan-950/20 border border-[#00f0ff]/30 transition-all cursor-pointer shadow-[inset_0_0_10px_rgba(0,240,255,0.1)]">
+                        class="py-2 rounded-xl text-[10px] font-bold text-[#22e3ff] bg-cyan-950/20 border border-[#22e3ff]/30 transition-all cursor-pointer shadow-[inset_0_0_10px_rgba(34,227,255,0.1)]">
                         STATS
                     </button>
                     <button id="tab-class-btn"
@@ -334,7 +334,7 @@
                                 class="flex items-center justify-between bg-slate-900/40 p-2.5 rounded-xl border border-slate-800/80 text-[11px]">
                                 <div class="flex items-center gap-2.5">
                                     <canvas id="shop-class-knight-canvas" width="96" height="96"
-                                        class="w-8 h-8 rounded-full border border-cyan-400/30 bg-cyan-950/20 shadow-[0_0_8px_rgba(0,240,255,0.2)]"></canvas>
+                                        class="w-8 h-8 rounded-full border border-cyan-400/30 bg-cyan-950/20 shadow-[0_0_8px_rgba(34,227,255,0.2)]"></canvas>
                                     <div>
                                         <p class="text-white font-bold">KNIGHT</p>
                                         <p class="text-[9px] text-slate-400">Wide sword qi ⚔️</p>
@@ -397,7 +397,7 @@
                 <div id="xp-bar-container"
                     class="ui-element w-full h-2 bg-slate-900/60 rounded-full border border-slate-700/50 overflow-hidden mt-0 shadow-inner">
                     <div id="xp-bar"
-                        class="h-full bg-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+                        class="h-full bg-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(34,227,255,0.5)]"
                         style="width: 0%"></div>
                 </div>
                 <!-- Dòng chỉ số -->
@@ -584,7 +584,7 @@
                             Hero name
                         </label>
                         <input id="settings-hero-name-input" type="text" maxlength="15" placeholder="Enter name..."
-                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-[#00f0ff] rounded-xl text-white text-xs outline-none transition-all" />
+                            class="w-full px-4 py-3 bg-slate-950 border border-slate-800 focus:border-[#22e3ff] rounded-xl text-white text-xs outline-none transition-all" />
                     </div>
 
                     <!-- BGM Volume slider in Settings -->
@@ -597,7 +597,7 @@
                             <span id="settings-volume-percent" class="text-xs text-cyan-400 font-bold">80%</span>
                         </div>
                         <input id="settings-volume-slider" type="range" min="0" max="100" value="80"
-                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#00f0ff]" />
+                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#22e3ff]" />
                     </div>
 
                     <!-- SFX Volume slider in Settings -->
@@ -610,7 +610,7 @@
                             <span id="settings-sfx-percent" class="text-xs text-cyan-400 font-bold">80%</span>
                         </div>
                         <input id="settings-sfx-slider" type="range" min="0" max="100" value="80"
-                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#00f0ff]" />
+                            class="w-full h-2 bg-slate-950 rounded-xl appearance-none cursor-pointer accent-[#22e3ff]" />
                     </div>
 
                     <!-- Reset Data Button -->
@@ -672,7 +672,7 @@
 
         <!-- 5.5. GIAO DIỆN HƯỚNG DẪN (HOW TO PLAY / GUIDE MODAL) -->
         <div id="guide-modal"
-            class="ui-overlay ui-overlay-blocking flex-col bg-[#04020c]/98 z-60 hidden cyber-grid-bg px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            class="ui-overlay ui-overlay-blocking flex-col bg-[#1d1442]/98 z-60 hidden cyber-grid-bg px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))]">
             <!-- Header -->
             <div class="w-full max-w-md mx-auto flex items-center justify-between mb-3 px-1 shrink-0">
                 <h2 class="glow-title text-lg font-black tracking-[0.15em] uppercase select-none">HOW TO PLAY</h2>
@@ -688,7 +688,7 @@
 
         <!-- 0. GIAO DIỆN LOADING CHUYỂN CẢNH (LOADING UI OVERLAY) -->
         <div id="loading-ui"
-            class="ui-overlay ui-overlay-blocking justify-center items-center bg-[#05020c] z-90 hidden flex-col">
+            class="ui-overlay ui-overlay-blocking justify-center items-center bg-[#140a2e] z-90 hidden flex-col">
             <div class="text-center space-y-4">
                 <h2 class="text-glow-cyan text-cyan-400 text-sm font-black tracking-[0.2em] uppercase animate-pulse">
                     LOADING MAP...

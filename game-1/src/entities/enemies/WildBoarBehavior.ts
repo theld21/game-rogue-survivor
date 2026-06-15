@@ -22,7 +22,7 @@ export class WildBoarBehavior implements EnemyBehavior {
                 enemy.aiState = 'charge_prep';
                 enemy.lastActionTime = time;
                 (enemy.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
-                enemy.setTint(0xff3300);
+                enemy.setTint(0xff8a3d);
                 enemy.wanderAngle = Phaser.Math.Angle.Between(enemy.x, enemy.y, player.x, player.y);
             }
         } else if (enemy.aiState === 'charge_prep') {

@@ -109,8 +109,8 @@ export class PlayScene extends Phaser.Scene {
     // Sấm sét
     public lastLightningTime: number = 0;
 
-    // Đồ họa nền vẽ lưới
-    public gridGraphics!: Phaser.GameObjects.Graphics;
+    // Nền backdrop gradient nướng sẵn vào RenderTexture (không còn lưới)
+    public backdropRT?: Phaser.GameObjects.RenderTexture;
     // Bụi sáng nền
     public ambientParticles: Phaser.GameObjects.Arc[] = [];
     public portalSprite?: Phaser.Physics.Arcade.Sprite;
@@ -227,17 +227,17 @@ export class PlayScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, virtualWidth, virtualHeight);
         this.cameras.main.centerOn(virtualWidth / 2, virtualHeight / 2);
 
-        this.gridGraphics = this.add.graphics();
-        this.drawGridBackground(virtualWidth, virtualHeight);
+        this.drawBackdrop(virtualWidth, virtualHeight);
 
         for (let i = 0; i < 30; i++) {
             const p = this.add.circle(
                 Phaser.Math.Between(0, virtualWidth),
                 Phaser.Math.Between(0, virtualHeight),
                 Phaser.Math.FloatBetween(1, 2.2),
-                0x00ffff,
-                Phaser.Math.FloatBetween(0.1, 0.35)
+                0x9d6bff,
+                Phaser.Math.FloatBetween(0.1, 0.3)
             );
+            p.setDepth(-9);
             this.ambientParticles.push(p);
         }
 
@@ -299,6 +299,7 @@ export class PlayScene extends Phaser.Scene {
         // Dọn dẹp sự kiện resize toàn cục khi scene shutdown
         this.events.once('shutdown', () => {
             this.scale.off('resize', this.handleResize, this);
+            if (this.backdropRT) { this.backdropRT.destroy(); this.backdropRT = undefined; }
         });
     }
 
@@ -410,27 +411,57 @@ export class PlayScene extends Phaser.Scene {
     // LOGIC HÀNH VI TRẬN ĐẤU
     // ==========================================
 
-    public drawGridBackground(w: number, h: number): void {
-        this.gridGraphics.clear();
-        let color = 0x221d45;
-        if (this.stage === 2) color = 0x1d4524;
-        else if (this.stage === 3) color = 0x4d1c1c;
-        else if (this.stage === 4) color = 0x4d1c44;
-        else if (this.stage === 5) color = 0x4d391c;
-        else if (this.stage === 6) color = 0x1c444d;
+    // Nền backdrop sunset-neon nướng sẵn vào RenderTexture (rẻ, không lưới):
+    // gradient dọc nightInk→panelInk + ánh skyMid theo stage + vignette + sao thưa.
+    public drawBackdrop(w: number, h: number): void {
+        if (this.backdropRT) { this.backdropRT.destroy(); this.backdropRT = undefined; }
 
-        this.gridGraphics.lineStyle(1.5, color, 0.45);
-        const size = 64;
-        this.gridGraphics.beginPath();
-        for (let x = -size; x < w + size * 2; x += size) {
-            this.gridGraphics.moveTo(x, -size);
-            this.gridGraphics.lineTo(x, h + size * 2);
+        // Ánh tint phụ theo stage (vẫn nằm trong bảng màu thống nhất)
+        let glow = 0x7b3fa0;            // skyMid (violet) mặc định
+        if (this.stage === 2) glow = 0x9dff5c;       // lime
+        else if (this.stage === 3) glow = 0xff7e5f;  // skyLow (cam-hồng)
+        else if (this.stage === 4) glow = 0xff4fa3;  // pink
+        else if (this.stage === 5) glow = 0xff8a3d;  // orange
+        else if (this.stage === 6) glow = 0x22e3ff;  // cyan
+
+        const g = this.make.graphics({ x: 0, y: 0 }, false);
+
+        // Gradient dọc: nightInk (trên) -> panelInk (dưới)
+        const top = Phaser.Display.Color.ValueToColor(0x140a2e);
+        const bot = Phaser.Display.Color.ValueToColor(0x1d1442);
+        const bands = Math.max(32, Math.floor(h / 18));
+        for (let i = 0; i < bands; i++) {
+            const c = Phaser.Display.Color.Interpolate.ColorWithColor(top, bot, bands, i);
+            g.fillStyle(Phaser.Display.Color.GetColor(c.r, c.g, c.b), 1);
+            g.fillRect(0, (i / bands) * h, w, h / bands + 1);
         }
-        for (let y = -size; y < h + size * 2; y += size) {
-            this.gridGraphics.moveTo(-size, y);
-            this.gridGraphics.lineTo(w + size * 2, y);
+
+        // Quầng sáng skyMid mềm ở giữa-trên (radial xấp xỉ bằng vài vòng tròn alpha thấp)
+        const gx = w / 2, gy = h * 0.42;
+        for (let i = 6; i >= 1; i--) {
+            g.fillStyle(glow, 0.05);
+            g.fillCircle(gx, gy, (Math.min(w, h) * 0.5) * (i / 6));
         }
-        this.gridGraphics.strokePath();
+
+        // Sao / đốm sáng thưa nhẹ
+        for (let i = 0; i < Math.floor((w * h) / 9000); i++) {
+            const sx = Phaser.Math.Between(0, w);
+            const sy = Phaser.Math.Between(0, h);
+            g.fillStyle(i % 5 === 0 ? glow : 0xffffff, Phaser.Math.FloatBetween(0.08, 0.3));
+            g.fillCircle(sx, sy, Phaser.Math.FloatBetween(0.4, 1.6));
+        }
+
+        // Vignette: viền tối quanh mép
+        const vb = Math.max(14, Math.floor(Math.min(w, h) * 0.18));
+        for (let i = 0; i < vb; i++) {
+            const a = 0.5 * (1 - i / vb);
+            g.lineStyle(2, 0x0a0518, a * 0.18);
+            g.strokeRect(i, i, w - i * 2, h - i * 2);
+        }
+
+        this.backdropRT = this.add.renderTexture(0, 0, w, h).setOrigin(0, 0).setDepth(-10);
+        this.backdropRT.draw(g);
+        g.destroy();
     }
 
     public onSecondTick(): void {
@@ -566,7 +597,7 @@ export class PlayScene extends Phaser.Scene {
             this.physics.add.overlap(this.shieldsGroup, this.enemiesGroup, (shield: any, enemy: any) => {
                 if (enemy.active) {
                     enemy.takeDamage(this.bulletDamage * 0.35);
-                    this.spawnExplosionParticles(enemy.x, enemy.y, 0x00ffff, 2);
+                    this.spawnExplosionParticles(enemy.x, enemy.y, 0x22e3ff, 2);
                 }
             }, undefined, this);
         }
@@ -638,7 +669,7 @@ export class PlayScene extends Phaser.Scene {
         lightningG.lineTo(enemy.x, enemy.y);
         lightningG.strokePath();
 
-        lightningG.lineStyle(1.5, 0x00ffff, 0.8);
+        lightningG.lineStyle(1.5, 0x22e3ff, 0.8);
         lightningG.strokePath();
 
         if (this.cameras && this.cameras.main) {
@@ -757,13 +788,13 @@ export class PlayScene extends Phaser.Scene {
             fontFamily: 'Arial, sans-serif',
             fontSize: (screenWidth / dpr) < 400 ? '13px' : '15px',
             fontStyle: 'bold',
-            color: '#ffea00',
-            backgroundColor: '#1b0c2a',
+            color: '#ffd83d',
+            backgroundColor: '#1d1442',
             padding: { x: 18, y: 10 },
             align: 'center'
         }).setOrigin(0.5);
 
-        toast.setStroke('#ff0066', 3);
+        toast.setStroke('#ff4fa3', 3);
         toast.setDepth(150);
         toast.setScrollFactor(0);
         toast.setScale(1 / baseZoom);
@@ -849,7 +880,7 @@ export class PlayScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, virtualWidth, virtualHeight);
         this.cameras.main.centerOn(virtualWidth / 2, virtualHeight / 2);
 
-        this.drawGridBackground(virtualWidth, virtualHeight);
+        this.drawBackdrop(virtualWidth, virtualHeight);
 
         if (this.joystick) {
             this.joystick.updateZoom(this.zoomVal);

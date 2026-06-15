@@ -43,7 +43,7 @@ export function handleBulletHitEnemy(scene: PlayScene, bullet: Bullet, enemy: En
 
 export function triggerFireballExplosion(scene: PlayScene, x: number, y: number): void {
     const aoeRadius = 80;
-    scene.spawnExplosionParticles(x, y, 0xff5500, 12);
+    scene.spawnExplosionParticles(x, y, 0xff8a3d, 12);
     SoundEffects.playExplosion();
     if (scene.cameras && scene.cameras.main) {
         scene.cameras.main.shake(100, 0.005);
@@ -148,7 +148,7 @@ export function handlePlayerCollectItem(scene: PlayScene, _player: Player, item:
     if (item.type === 'xp') {
         const amount = scene.isDoubleXpActive ? 30 : 15;
         scene.xp += amount;
-        scene.showFloatingText(item.x, item.y - 12, `+${amount} XP`, "#00ff88");
+        scene.showFloatingText(item.x, item.y - 12, `+${amount} XP`, "#4dffa0");
 
         if (scene.xp >= scene.xpToNextLevel) {
             scene.levelUp();
@@ -156,17 +156,17 @@ export function handlePlayerCollectItem(scene: PlayScene, _player: Player, item:
     } else if (item.type === 'gold') {
         const goldVal = Math.floor((scene.stage - 1) / 2) + 1;
         scene.goldCollected += goldVal;
-        scene.showFloatingText(item.x, item.y - 12, `+${goldVal} Gold`, "#ffd700");
+        scene.showFloatingText(item.x, item.y - 12, `+${goldVal} Gold`, "#ffd83d");
     } else if (item.type === 'heart') {
         const heal = Math.round(scene.maxHp * 0.20); // Hồi 20% HP
         scene.hp = Math.min(scene.maxHp, scene.hp + heal);
-        scene.showFloatingText(item.x, item.y - 12, `+${heal} HP`, "#ff007f");
+        scene.showFloatingText(item.x, item.y - 12, `+${heal} HP`, "#ff4fa3");
         scene.updatePlayerHpBridge();
     } else if (item.type === 'magnet') {
-        scene.showFloatingText(item.x, item.y - 12, "SUPER MAGNET!", "#00ffff");
+        scene.showFloatingText(item.x, item.y - 12, "SUPER MAGNET!", "#22e3ff");
         scene.activateSuperMagnet();
     } else if (item.type === 'shield_item') {
-        scene.showFloatingText(item.x, item.y - 12, "INVINCIBLE SHIELD (5s)!", "#00ffff");
+        scene.showFloatingText(item.x, item.y - 12, "INVINCIBLE SHIELD (5s)!", "#22e3ff");
         scene.isInvulnerable = true;
 
         const skin = GameState.selectedSkin;
@@ -184,7 +184,7 @@ export function handlePlayerCollectItem(scene: PlayScene, _player: Player, item:
             scene.shieldTimer = undefined;
         });
     } else if (item.type === 'freeze_item') {
-        scene.showFloatingText(item.x, item.y - 12, "FREEZE MONSTERS (4s)!", "#88e5ff");
+        scene.showFloatingText(item.x, item.y - 12, "FREEZE MONSTERS (4s)!", "#22e3ff");
         scene.enemiesGroup.getChildren().forEach(e => {
             const enemy = e as Enemy;
             if (enemy.active && !enemy.isBoss) {
@@ -203,7 +203,7 @@ export function handlePlayerCollectItem(scene: PlayScene, _player: Player, item:
             }
         });
     } else if (item.type === 'bomb_item') {
-        scene.showFloatingText(item.x, item.y - 12, "KILL ALL MONSTERS!", "#ff3b30");
+        scene.showFloatingText(item.x, item.y - 12, "KILL ALL MONSTERS!", "#ff5470");
         if (scene.cameras && scene.cameras.main) {
             scene.cameras.main.shake(250, 0.01);
             scene.cameras.main.flash(100, 255, 100, 0);
@@ -215,7 +215,7 @@ export function handlePlayerCollectItem(scene: PlayScene, _player: Player, item:
             }
         });
     } else if (item.type === 'double_xp') {
-        scene.showFloatingText(item.x, item.y - 12, "X2 XP (8s)!", "#ffd700");
+        scene.showFloatingText(item.x, item.y - 12, "X2 XP (8s)!", "#ffd83d");
         scene.isDoubleXpActive = true;
 
         const xpBar = document.getElementById('xp-bar');
@@ -263,7 +263,7 @@ export function handleEnterPortal(scene: PlayScene): void {
             if (!scene.cameras || !scene.cameras.main) return;
             const virtualWidth = scene.cameras.main.width / scene.zoomVal;
             const virtualHeight = scene.cameras.main.height / scene.zoomVal;
-            scene.drawGridBackground(virtualWidth, virtualHeight);
+            scene.drawBackdrop(virtualWidth, virtualHeight);
 
             scene.collectiblesGroup.clear(true, true);
             scene.bulletsGroup.clear(true, true);

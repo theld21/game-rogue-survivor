@@ -15,11 +15,11 @@ export class CrystalDragonBehavior implements EnemyBehavior {
                 enemy.aiState = 'leap_prep';
                 enemy.lastActionTime = time;
                 (enemy.body as Phaser.Physics.Arcade.Body).setVelocity(0, 0);
-                enemy.setTint(0x00ffff); // Phát quang lam
+                enemy.setTint(0x22e3ff); // Phát quang lam
                 
                 // Telegraph vòng đỏ lớn
-                enemy.telegraphCircle = enemy.scene.add.circle(player.x, player.y, 80, 0x00ffff, 0.2);
-                enemy.telegraphCircle.setStrokeStyle(2, 0x00ffff, 0.8);
+                enemy.telegraphCircle = enemy.scene.add.circle(player.x, player.y, 80, 0x22e3ff, 0.2);
+                enemy.telegraphCircle.setStrokeStyle(2, 0x22e3ff, 0.8);
                 enemy.telegraphCircle.setDepth(5);
                 enemy.wanderAngle = player.x; // Lưu tọa độ đích nhảy
                 enemy.nextWanderChangeTime = player.y;

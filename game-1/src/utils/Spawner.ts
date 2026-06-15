@@ -58,14 +58,14 @@ export function spawnEnemyBullet(scene: PlayScene, x: number, y: number, angle: 
 
 export function spawnDamagePopup(scene: PlayScene, x: number, y: number, text: number, isCrit: boolean, isWeakPoint: boolean = false): void {
     let displayStr = isCrit ? `🔥 ${text}!` : `${text}`;
-    let color = isCrit ? '#ffcc00' : '#ffffff';
-    let strokeColor = isCrit ? '#ff3300' : '#333333';
+    let color = isCrit ? '#ffd83d' : '#ffffff';
+    let strokeColor = isCrit ? '#ff8a3d' : '#140a2e';
     let fontSize = isCrit ? '18px' : '13px';
 
     if (isWeakPoint) {
         displayStr = `🎯 ĐIỂM YẾU: ${text}!!`;
-        color = '#00ffff';
-        strokeColor = '#0066aa';
+        color = '#22e3ff';
+        strokeColor = '#0a3a52';
         fontSize = '20px';
     }
 

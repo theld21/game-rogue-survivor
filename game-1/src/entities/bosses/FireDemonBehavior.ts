@@ -11,7 +11,7 @@ export class FireDemonBehavior implements EnemyBehavior {
 
         if (time - enemy.lastActionTime > 4000) {
             enemy.lastActionTime = time;
-            enemy.setTint(0xff5500);
+            enemy.setTint(0xff8a3d);
 
             enemy.scene.time.delayedCall(500, () => {
                 if (enemy.active) {

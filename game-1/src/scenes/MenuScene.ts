@@ -335,10 +335,17 @@ export class MenuScene extends Phaser.Scene {
 
     private createCanvasStarsBackground(w: number, h: number): void {
         const bgGraphics = this.add.graphics();
-        bgGraphics.fillGradientStyle(0x070414, 0x070414, 0x160f2b, 0x160f2b, 1);
+        // Gradient sunset-neon: nightInk (trên) -> panelInk + ánh skyMid (dưới)
+        bgGraphics.fillGradientStyle(0x140a2e, 0x140a2e, 0x2a1a5e, 0x1d1442, 1);
         bgGraphics.fillRect(0, 0, w, h);
+        // Quầng sáng violet mềm phía trên
+        for (let i = 7; i >= 1; i--) {
+            bgGraphics.fillStyle(0x7b3fa0, 0.045);
+            bgGraphics.fillCircle(w / 2, h * 0.34, (Math.min(w, h) * 0.6) * (i / 7));
+        }
 
-        // Vẽ 40 ngôi sao tĩnh nhấp nháy nhè nhẹ
+        // Vẽ 40 ngôi sao tĩnh nhấp nháy nhè nhẹ (tone cyan/trắng)
+        const starColors = [0x22e3ff, 0xffffff, 0xff4fa3, 0x9d6bff];
         for (let i = 0; i < 40; i++) {
             const x = Phaser.Math.Between(0, w);
             const y = Phaser.Math.Between(0, h);
@@ -346,8 +353,8 @@ export class MenuScene extends Phaser.Scene {
                 x,
                 y,
                 Phaser.Math.FloatBetween(1, 2.5),
-                0x00ffff,
-                Phaser.Math.FloatBetween(0.2, 0.7)
+                starColors[i % starColors.length],
+                Phaser.Math.FloatBetween(0.2, 0.6)
             );
             this.starsList.push(star);
 

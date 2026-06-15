@@ -12,13 +12,13 @@ function updateSliderTrack(slider: HTMLInputElement, color: string): void {
     const max = parseFloat(slider.max) || 100;
     const val = parseFloat(slider.value) || 0;
     const percent = ((val - min) / (max - min)) * 100;
-    slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #020617 ${percent}%, #020617 100%)`;
+    slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${percent}%, #1d1442 ${percent}%, #1d1442 100%)`;
 }
 
 function drawKnight(ctx: CanvasRenderingContext2D): void {
     ctx.clearRect(0, 0, 96, 96);
     // Body (Red triangle)
-    ctx.fillStyle = '#cc2222';
+    ctx.fillStyle = '#ff5470';
     ctx.beginPath();
     ctx.moveTo(48, 48);
     ctx.lineTo(20, 92);
@@ -27,7 +27,7 @@ function drawKnight(ctx: CanvasRenderingContext2D): void {
     ctx.fill();
 
     // Head (Blue circle)
-    ctx.fillStyle = '#44aaff';
+    ctx.fillStyle = '#22e3ff';
     ctx.beginPath();
     ctx.arc(48, 48, 36, 0, Math.PI * 2);
     ctx.fill();
@@ -51,7 +51,7 @@ function drawKnight(ctx: CanvasRenderingContext2D): void {
     ctx.stroke();
 
     // Sword (Right line)
-    ctx.strokeStyle = '#ffd700';
+    ctx.strokeStyle = '#ffd83d';
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.moveTo(72, 48);
@@ -62,13 +62,13 @@ function drawKnight(ctx: CanvasRenderingContext2D): void {
 function drawMage(ctx: CanvasRenderingContext2D): void {
     ctx.clearRect(0, 0, 96, 96);
     // Body (Purple circle)
-    ctx.fillStyle = '#8833ff';
+    ctx.fillStyle = '#9d6bff';
     ctx.beginPath();
     ctx.arc(48, 48, 36, 0, Math.PI * 2);
     ctx.fill();
 
     // Head outline (Cyan)
-    ctx.strokeStyle = '#00ffff';
+    ctx.strokeStyle = '#22e3ff';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(48, 48, 38, 0, Math.PI * 2);
@@ -84,7 +84,7 @@ function drawMage(ctx: CanvasRenderingContext2D): void {
     ctx.fill();
 
     // Hat gold band
-    ctx.strokeStyle = '#ffd700';
+    ctx.strokeStyle = '#ffd83d';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(20, 28);
@@ -100,7 +100,7 @@ function drawMage(ctx: CanvasRenderingContext2D): void {
     ctx.stroke();
 
     // Staff gem
-    ctx.fillStyle = '#ff33cc';
+    ctx.fillStyle = '#ff4fa3';
     ctx.beginPath();
     ctx.arc(80, 20, 10, 0, Math.PI * 2);
     ctx.fill();
@@ -109,7 +109,7 @@ function drawMage(ctx: CanvasRenderingContext2D): void {
 function drawRanger(ctx: CanvasRenderingContext2D): void {
     ctx.clearRect(0, 0, 96, 96);
     // Head (Green circle)
-    ctx.fillStyle = '#33cc66';
+    ctx.fillStyle = '#9dff5c';
     ctx.beginPath();
     ctx.arc(48, 48, 36, 0, Math.PI * 2);
     ctx.fill();
@@ -130,7 +130,7 @@ function drawRanger(ctx: CanvasRenderingContext2D): void {
     ctx.fill();
 
     // Bow (Brown arc on left)
-    ctx.strokeStyle = '#8b5a2b';
+    ctx.strokeStyle = '#feb47b';
     ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.arc(16, 48, 20, -Math.PI / 2, Math.PI / 2, true);
@@ -144,7 +144,7 @@ function drawSlime(ctx: CanvasRenderingContext2D, x: number, y: number, scale: n
     ctx.translate(-24, -24);
 
     // Body (Red circle)
-    ctx.fillStyle = '#ff3b30';
+    ctx.fillStyle = '#ff5470';
     ctx.beginPath();
     ctx.arc(24, 24, 22, 0, Math.PI * 2);
     ctx.fill();
@@ -187,17 +187,17 @@ function drawBulletMage(ctx: CanvasRenderingContext2D, x: number, y: number, sca
     ctx.scale(scale, scale);
     ctx.translate(-16, -16);
 
-    ctx.fillStyle = '#ff3300';
+    ctx.fillStyle = '#ff5470';
     ctx.beginPath();
     ctx.arc(16, 16, 16, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#ffaa00';
+    ctx.fillStyle = '#ff8a3d';
     ctx.beginPath();
     ctx.arc(16, 16, 10, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = '#ffea00';
+    ctx.fillStyle = '#ffd83d';
     ctx.beginPath();
     ctx.arc(16, 16, 5, 0, Math.PI * 2);
     ctx.fill();
@@ -211,7 +211,7 @@ function drawBulletRanger(ctx: CanvasRenderingContext2D, x: number, y: number, s
     ctx.scale(scale, scale);
     ctx.translate(-20, -6);
 
-    ctx.strokeStyle = '#ffd700';
+    ctx.strokeStyle = '#ffd83d';
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(0, 6);
@@ -293,9 +293,9 @@ export const UIBridge = {
         };
 
         const particleColors = {
-            knight: '#00f0ff',
-            mage: '#ff5500',
-            ranger: '#eab308'
+            knight: '#22e3ff',
+            mage: '#9d6bff',
+            ranger: '#9dff5c'
         };
 
         const loop = () => {
@@ -514,16 +514,16 @@ export const UIBridge = {
                 const btn = document.getElementById(`intro-${c}-btn`);
                 if (btn) {
                     if (c === char) {
-                        let borderCol = 'border-[#00f0ff]';
-                        let textCol = 'text-[#00f0ff]';
+                        let borderCol = 'border-[#22e3ff]';
+                        let textCol = 'text-[#22e3ff]';
                         let shadowClass = 'shadow-neon';
                         if (c === 'mage') {
-                            borderCol = 'border-[#d946ef]';
-                            textCol = 'text-[#d946ef]';
+                            borderCol = 'border-[#ff4fa3]';
+                            textCol = 'text-[#ff4fa3]';
                             shadowClass = 'shadow-neonpink';
                         } else if (c === 'ranger') {
-                            borderCol = 'border-[#22c55e]';
-                            textCol = 'text-[#22c55e]';
+                            borderCol = 'border-[#9dff5c]';
+                            textCol = 'text-[#9dff5c]';
                             shadowClass = 'shadow-neon';
                         }
                         btn.className = `flex flex-col items-center p-3 rounded-2xl border bg-slate-900 ${borderCol} ${textCol} text-center scale-105 ${shadowClass} transition-all duration-200 select-none cursor-pointer outline-none`;
@@ -665,7 +665,7 @@ export const UIBridge = {
                 const btn = tabBtns[k as 'upgrade' | 'class'];
                 if (btn) {
                     if (k === activeTab) {
-                        btn.className = 'py-2 rounded-xl text-[10px] font-bold text-[#00f0ff] bg-cyan-950/20 border border-[#00f0ff]/30 transition-all cursor-pointer shadow-[inset_0_0_10px_rgba(0,240,255,0.1)]';
+                        btn.className = 'py-2 rounded-xl text-[10px] font-bold text-[#22e3ff] bg-cyan-950/20 border border-[#22e3ff]/30 transition-all cursor-pointer shadow-[inset_0_0_10px_rgba(34,227,255,0.1)]';
                     } else {
                         btn.className = 'py-2 rounded-xl text-[10px] font-bold text-slate-400 hover:text-white transition-all cursor-pointer';
                     }
@@ -706,12 +706,12 @@ export const UIBridge = {
         if (volumeSlider && volumePercent) {
             volumeSlider.value = initialVolume.toString();
             volumePercent.innerText = `${initialVolume}%`;
-            updateSliderTrack(volumeSlider, '#00f0ff');
+            updateSliderTrack(volumeSlider, '#22e3ff');
 
             volumeSlider.oninput = () => {
                 const vol = parseInt(volumeSlider.value, 10);
                 volumePercent.innerText = `${vol}%`;
-                updateSliderTrack(volumeSlider, '#00f0ff');
+                updateSliderTrack(volumeSlider, '#22e3ff');
                 onVolumeChange(vol);
             };
         }
@@ -721,12 +721,12 @@ export const UIBridge = {
         if (sfxSlider && sfxPercent) {
             sfxSlider.value = initialSfxVolume.toString();
             sfxPercent.innerText = `${initialSfxVolume}%`;
-            updateSliderTrack(sfxSlider, '#00f0ff');
+            updateSliderTrack(sfxSlider, '#22e3ff');
 
             sfxSlider.oninput = () => {
                 const vol = parseInt(sfxSlider.value, 10);
                 sfxPercent.innerText = `${vol}%`;
-                updateSliderTrack(sfxSlider, '#00f0ff');
+                updateSliderTrack(sfxSlider, '#22e3ff');
                 onSfxVolumeChange(vol);
             };
         }
@@ -850,7 +850,7 @@ export const UIBridge = {
 
         skills.forEach(sk => {
             const btn = document.createElement('button');
-            btn.className = 'w-full flex items-center justify-between p-3.5 bg-slate-950/60 border border-slate-800 hover:border-cyber hover:shadow-[0_0_15px_rgba(0,240,255,0.15)] rounded-2xl text-left transition-all hover:scale-[1.02] active:scale-[0.98] text-xs ui-element cursor-pointer';
+            btn.className = 'w-full flex items-center justify-between p-3.5 bg-slate-950/60 border border-slate-800 hover:border-cyber hover:shadow-[0_0_15px_rgba(34,227,255,0.15)] rounded-2xl text-left transition-all hover:scale-[1.02] active:scale-[0.98] text-xs ui-element cursor-pointer';
 
             btn.innerHTML = `
                 <div class="flex-1 pr-2 space-y-0.5">
@@ -950,12 +950,12 @@ export const UIBridge = {
         if (volumeSlider && volumePercent) {
             volumeSlider.value = initialVolume.toString();
             volumePercent.innerText = `${initialVolume}%`;
-            updateSliderTrack(volumeSlider, '#fbbf24');
+            updateSliderTrack(volumeSlider, '#ffd83d');
 
             volumeSlider.oninput = () => {
                 const vol = parseInt(volumeSlider.value, 10);
                 volumePercent.innerText = `${vol}%`;
-                updateSliderTrack(volumeSlider, '#fbbf24');
+                updateSliderTrack(volumeSlider, '#ffd83d');
                 onVolumeChange(vol);
             };
         }
@@ -965,12 +965,12 @@ export const UIBridge = {
         if (sfxSlider && sfxPercent) {
             sfxSlider.value = initialSfxVolume.toString();
             sfxPercent.innerText = `${initialSfxVolume}%`;
-            updateSliderTrack(sfxSlider, '#fbbf24');
+            updateSliderTrack(sfxSlider, '#ffd83d');
 
             sfxSlider.oninput = () => {
                 const vol = parseInt(sfxSlider.value, 10);
                 sfxPercent.innerText = `${vol}%`;
-                updateSliderTrack(sfxSlider, '#fbbf24');
+                updateSliderTrack(sfxSlider, '#ffd83d');
                 onSfxVolumeChange(vol);
             };
         }
@@ -1008,12 +1008,12 @@ export const UIBridge = {
             <div><div class="font-bold text-[12.5px]" style="color:${color}">${name}</div><div class="text-[11.5px] text-slate-400 leading-relaxed">${desc}</div></div></div>`;
         const chip = (color: string, label: string) => `<span class="rounded-full px-2.5 py-1 text-[11px] bg-slate-900/60 border border-white/10 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full shrink-0" style="background:${color}"></span>${label}</span>`;
 
-        const objective = sec('#ffd700', 'Objective',
+        const objective = sec('#ffd83d', 'Objective',
             `<div class="text-[12px] text-slate-300 leading-relaxed">Survive the endless swarm. Move to dodge — your hero <b class="text-cyan-400">auto-attacks</b> the nearest foes. Collect green <b class="text-emerald-400">XP gems</b> to level up and pick new powers. Survive each stage, defeat its <b class="text-rose-400">Boss</b>, then step into the <b class="text-fuchsia-400">portal</b> to advance. Clear <b class="text-amber-400">Stage 3</b> → <b class="text-emerald-400">YOU WIN</b>.</div>`);
 
-        const controls = sec('#00f0ff', 'Controls', [
-            row('#00f0ff', 'Move', 'Touch &amp; drag anywhere to steer with the virtual joystick. Release to stop.'),
-            row('#ffd700', 'Auto-Attack', 'Your weapon fires on its own at the closest enemy — just focus on dodging &amp; positioning.'),
+        const controls = sec('#22e3ff', 'Controls', [
+            row('#22e3ff', 'Move', 'Touch &amp; drag anywhere to steer with the virtual joystick. Release to stop.'),
+            row('#ffd83d', 'Auto-Attack', 'Your weapon fires on its own at the closest enemy — just focus on dodging &amp; positioning.'),
             row('#94a3b8', 'Pause', 'Tap the pause button (top-right) to freeze the battle and adjust audio.'),
         ].join(''));
 
@@ -1023,14 +1023,14 @@ export const UIBridge = {
             const label = c.name.replace('Class: ', '');
             return `<div class="flex items-center justify-between gap-3 text-[12px]"><span class="font-bold shrink-0 text-white">${label}</span><span class="text-slate-400 text-[10.5px] text-right leading-tight">${c.weaponName.replace('Weapon: ', '')}<br>HP ${c.baseHp} · SPD ${c.baseSpeed} · DMG ${c.baseDamage}</span></div>`;
         }).join('');
-        const heroes = sec('#00f0ff', 'Heroes', `<div class="flex flex-col gap-2.5">${heroRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">Unlock &amp; switch classes in the SHOP. Knight starts unlocked.</div>`);
+        const heroes = sec('#22e3ff', 'Heroes', `<div class="flex flex-col gap-2.5">${heroRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">Unlock &amp; switch classes in the SHOP. Knight starts unlocked.</div>`);
 
         // Skill upgrades — dựng từ SkillManager
         const zeroLv = { attackSpeed: 0, moveSpeed: 0, thorns: 0, multiShot: 0, shield: 0, lightning: 0, attackRange: 0 };
         const skillRows = SkillManager.getAvailableSkills(zeroLv).map((s) =>
             `<div class="text-[12px] leading-relaxed"><span class="font-bold text-cyan-400">${s.name}</span> <span class="text-slate-400">— ${s.desc}</span></div>`
         ).join('');
-        const skills = sec('#a855f7', 'Level-Up Skills', `<div class="flex flex-col gap-2">${skillRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">On level-up, time freezes and you pick 1 of 3 random upgrades. Stack them to grow stronger.</div>`);
+        const skills = sec('#9d6bff', 'Level-Up Skills', `<div class="flex flex-col gap-2">${skillRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">On level-up, time freezes and you pick 1 of 3 random upgrades. Stack them to grow stronger.</div>`);
 
         // Enemies — dựng từ NORMAL_ENEMIES (bỏ thực thể không phải quái: lich_orb, crystal_spike)
         const skillVerb: Record<string, string> = { leap: 'leaps at you', chase: 'chases you down', wander: 'roams the field', charge: 'charges in a straight line', shoot: 'fires projectiles' };
@@ -1038,10 +1038,10 @@ export const UIBridge = {
             .filter((e) => e.id !== 'lich_orb' && e.id !== 'crystal_spike')
             .map((e) => chip(e.colorStr, `${e.name} <span class="text-slate-500">· ${skillVerb[e.skill] ?? e.skill}</span>`))
             .join('');
-        const enemies = sec('#ff3b30', 'Enemies & Bosses', `<div class="flex flex-wrap gap-2">${enemyChips}</div><div class="text-[11px] text-slate-400 leading-relaxed mt-1">Every 30s the swarm enrages and grows tougher. At ~50s a <b class="text-rose-400">Stage Boss</b> appears — telegraphed leaps, projectile rings &amp; lightning. Beat it to open the portal.</div>`);
+        const enemies = sec('#ff5470', 'Enemies & Bosses', `<div class="flex flex-wrap gap-2">${enemyChips}</div><div class="text-[11px] text-slate-400 leading-relaxed mt-1">Every 30s the swarm enrages and grows tougher. At ~50s a <b class="text-rose-400">Stage Boss</b> appears — telegraphed leaps, projectile rings &amp; lightning. Beat it to open the portal.</div>`);
 
         // Items / collectibles
-        const items = sec('#34d399', 'Drops & Power-Ups', `<div class="flex flex-col gap-1.5 text-[11.5px] text-slate-400 leading-relaxed">
+        const items = sec('#4dffa0', 'Drops & Power-Ups', `<div class="flex flex-col gap-1.5 text-[11.5px] text-slate-400 leading-relaxed">
             <div><b class="text-emerald-400">XP Gem</b> — fills the XP bar to level up.</div>
             <div><b class="text-yellow-400">Gold Coin</b> — spend in the SHOP between runs.</div>
             <div><b class="text-rose-400">Heart</b> — restores HP. <b class="text-cyan-400">Magnet</b> — pulls in every drop.</div>
@@ -1050,9 +1050,9 @@ export const UIBridge = {
         </div>`);
 
         // Progression
-        const progress = sec('#fbbf24', 'Progression', `<div class="text-[11.5px] text-slate-400 leading-relaxed">Gold persists between runs. In the <b class="text-amber-400">SHOP</b> buy permanent boosts to <b class="text-cyan-400">Max HP</b>, <b class="text-cyan-400">Speed</b> &amp; <b class="text-cyan-400">Damage</b>, or unlock new heroes. Die or win → gold banked → upgrade → dive back in.</div>`);
+        const progress = sec('#ffd83d', 'Progression', `<div class="text-[11.5px] text-slate-400 leading-relaxed">Gold persists between runs. In the <b class="text-amber-400">SHOP</b> buy permanent boosts to <b class="text-cyan-400">Max HP</b>, <b class="text-cyan-400">Speed</b> &amp; <b class="text-cyan-400">Damage</b>, or unlock new heroes. Die or win → gold banked → upgrade → dive back in.</div>`);
 
-        const tips = sec('#34d399', 'Survival Tips', `<div class="flex flex-col gap-2">` + [
+        const tips = sec('#4dffa0', 'Survival Tips', `<div class="flex flex-col gap-2">` + [
             'Keep moving — standing still gets you swarmed.',
             'Grab XP gems fast to out-level the rising difficulty.',
             'Save Bombs &amp; Freeze for the boss or a tight crowd.',
