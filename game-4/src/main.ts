@@ -8,9 +8,9 @@ import EventBus from './EventBus.ts';
 import Storage from './core/Storage.ts';
 import AudioManager from './core/AudioManager.ts';
 import { LEVELS, MAX_LEVEL } from './data/Levels.ts';
-import { SUPPORT_ITEMS, UPGRADE_SHOP } from './core/GameConfig.ts';
-import { supportItemName } from './data/Items.ts';
-import { t, setLang, getLang } from './core/i18n.ts';
+import { SUPPORT_ITEMS, UPGRADE_SHOP, RARITY, PLAYER, CSS } from './core/GameConfig.ts';
+import { ITEMS, supportItemName, itemName, valueOf } from './data/Items.ts';
+import { t, tEn, setLang, getLang } from './core/i18n.ts';
 import { SlotView } from './systems/Inventory.ts';
 import type { Lang } from './core/i18n.ts';
 
@@ -126,6 +126,85 @@ function setHowToPlay(): void {
     el.innerHTML = `<span class="flex-none text-base leading-[1.3]">${icon}</span><span>${t(key)}</span>`;
   });
 }
+
+// ---- How to Play (full guide) ----
+// Config-driven so the guide never drifts from the real game data. English copy.
+function renderGuide(): void {
+  // Section card with a spaced-out header bar.
+  const sec = (color: string, title: string, inner: string) =>
+    `<div class="bg-[#06182a99] border border-white/5 rounded-2xl p-4 flex flex-col gap-3 backdrop-blur-md">
+      <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span><span class="font-display font-bold text-[11px] tracking-[0.2em] uppercase text-white/90">${title}</span></div>${inner}</div>`;
+  // Two-line control row: bold name on top, airy description below.
+  const row = (icon: string, color: string, name: string, body: string) =>
+    `<div class="flex gap-3 items-start">
+      <span class="flex-none text-xl leading-none mt-0.5">${icon}</span>
+      <div><div class="font-display font-bold text-[13px]" style="color:${color}">${name}</div><div class="text-[12.5px] text-slate-300/80 leading-relaxed font-body">${body}</div></div></div>`;
+  const chip = (color: string, label: string, extra = '') =>
+    `<span class="bg-[#0a1f30] border border-white/5 rounded-full px-2.5 py-1 text-[11.5px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+
+  const objective = sec(CSS.gold, 'Objective', `<div class="text-[12.5px] text-slate-300/80 leading-relaxed font-body">Captain a neon pirate ship across <b style="color:${CSS.cyan}">${MAX_LEVEL} voyages</b>. In each, sink every <b style="color:${CSS.crimson}">Guardian</b> ship to drop the Skull Isle's shield, then bombard the isle until it falls → <b style="color:${CSS.gold}">VICTORY</b>. Plunder treasure along the way to fund upgrades.</div>`);
+
+  const controls = sec(CSS.cyan, 'Controls', [
+    row('🕹️', CSS.cyan, 'Steer', 'Touch &amp; drag anywhere to sail. The camera locks to your ship — push toward where you want to go.'),
+    row('💥', CSS.gold, 'Cannons', 'Auto-fire at the nearest enemy in range. No button — just keep them in your sights.'),
+    row('🧰', CSS.cyan, 'Open Chest', 'Dock near a wild island and tap OPEN CHEST to loot. Move items between the island chest and your ship hold.'),
+    row('🏪', CSS.gold, 'Harbour', 'Dock at your home harbour to sell plunder, repair the hull, and buy per-voyage gear.'),
+  ].join(''));
+
+  const survival = sec(CSS.green, 'Survival', [
+    row('❤️', CSS.crimson, 'Hull HP', `Start at ${PLAYER.maxHp} HP. Enemy fire and rams chip it down — hit 0 and your ship sinks. Repair at the Harbour.`),
+    row('📦', CSS.teal, 'Cargo Hold', `Only ${PLAYER.cargoSlots} slots. Loot is lost if you sink, so sell at the Harbour between fights.`),
+    row('☠️', CSS.purple, 'Guardians', 'The Skull Isle stays shielded until every Guardian is sunk. Clear them, then strike the isle.'),
+  ].join(''));
+
+  // Loot table, grouped by rarity, pulled live from ITEMS + RARITY.
+  const rarities: (keyof typeof RARITY)[] = ['common', 'rare', 'epic', 'legendary'];
+  const lootByRarity = rarities.map((r) => {
+    const defs = Object.values(ITEMS).filter((d) => !d.seaItem && d.rarity === r);
+    if (!defs.length) return '';
+    return `<div class="flex flex-col gap-1.5">
+      <div class="text-[10px] uppercase tracking-wider font-display" style="color:${RARITY[r].css}">${r} · ${valueOf(defs[0])}+ 🪙</div>
+      <div class="flex flex-wrap gap-2">${defs.map((d) => chip(RARITY[r].css, `${d.glyph} ${itemName(d, 'en')}`)).join('')}</div></div>`;
+  }).join('');
+  const loot = sec(CSS.gold, 'Plunder &amp; Rarity', `<div class="flex flex-col gap-2.5">${lootByRarity}</div><div class="text-[11.5px] text-slate-400 leading-relaxed font-body">Rarer loot sells for more 🪙. Sell everything at the Harbour before it sinks with you.</div>`);
+
+  // Sea collectibles
+  const seaDefs = Object.values(ITEMS).filter((d) => d.seaItem);
+  const sea = sec(CSS.purple, 'Sea Treasures', row('🔮', CSS.purple, 'Floating Finds (Lv 3+)', `Rare treasures drift on the open water — sail over them to grab an instant reward.`) +
+    `<div class="flex flex-wrap gap-2">${seaDefs.map((d) => chip(RARITY[d.rarity].css, `${d.glyph} ${itemName(d, 'en')}`)).join('')}</div>`);
+
+  // Per-raid support gear (Harbour)
+  const gear = sec(CSS.teal, 'Harbour Gear (per voyage)', `<div class="flex flex-col gap-2">${SUPPORT_ITEMS.map((g) =>
+    `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none">${g.glyph} ${supportItemName(g.id, 'en')}</span><span class="text-slate-400 text-[11px]">🪙 ${g.cost}</span></div>`).join('')}</div><div class="text-[11.5px] text-slate-400 leading-relaxed font-body">Bought with gold, these boosts last the current voyage only.</div>`);
+
+  // Permanent upgrades (Upgrade Yard, suns)
+  const upgRows = [
+    { name: 'Ship Speed', desc: `+${UPGRADE_SHOP.speed.bonusPct * 100}% top speed / level`, color: CSS.cyan },
+    { name: 'Fire Rate', desc: `+${UPGRADE_SHOP.fireRate.bonusPct * 100}% faster cannons / level`, color: CSS.gold },
+    { name: 'Hull HP', desc: `+${UPGRADE_SHOP.hp.bonusFlat} max HP / level`, color: CSS.green },
+  ];
+  const upgrades = sec(CSS.gold, 'Upgrade Yard (☀️ Suns)', `<div class="flex flex-col gap-2">${upgRows.map((u) =>
+    `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${u.color}">${u.name}</span><span class="text-slate-400 text-[11px] text-right">${u.desc} · ${UPGRADE_SHOP.speed.maxLevel} lvls</span></div>`).join('')}</div><div class="text-[11.5px] text-slate-400 leading-relaxed font-body">Collect ☀️ Suns on the seas; they respawn, so you can farm permanent ship upgrades from the menu's Upgrade Yard.</div>`);
+
+  // Voyages overview, from LEVELS
+  const voyages = sec(CSS.purple, 'Voyages', `<div class="flex flex-col gap-1.5">${LEVELS.map((lv) =>
+    `<div class="flex items-center gap-2.5 text-[12.5px]"><span class="font-display font-black w-4 flex-none text-center" style="color:${CSS.cyan}">${lv.id}</span><span class="font-pirate text-[15px] text-white flex-none">${tEn(`level.${lv.id}.name`)}</span><span class="text-slate-500 text-[10px] ml-auto">${lv.guardianCount}☠ · ${lv.patrolCount}⚓</span></div>`).join('')}</div><div class="text-[11.5px] text-slate-400 leading-relaxed font-body">Each voyage adds tougher patrols, more Guardians and a bigger sea. Clear one to unlock the next.</div>`);
+
+  const tips = sec(CSS.teal, 'Captain&rsquo;s Tips', `<div class="flex flex-col gap-2">${[
+    'Sell plunder often — a full hold is wasted if your ship sinks.',
+    'Repair at the Harbour before charging the Skull Isle.',
+    'Farm ☀️ Suns and max your upgrades before the late voyages.',
+    'Kite Guardians one at a time; let your cannons auto-fire while you dodge.',
+  ].map((tip) => `<div class="flex gap-2.5 text-[12.5px] text-slate-300/80 leading-relaxed font-body"><span class="flex-none" style="color:${CSS.teal}">▸</span>${tip}</div>`).join('')}</div>`);
+
+  $('guide-body').innerHTML = objective + controls + survival + loot + sea + gear + upgrades + voyages + tips;
+}
+
+// One opener, two triggers (menu + in-game pause). z-50 layers above pause (z-40).
+const openGuide = (): void => { AudioManager.uiTap(); renderGuide(); show('guide-panel', 'flex'); $('guide-body').scrollTop = 0; };
+$('btn-guide').addEventListener('click', openGuide);
+$('btn-pause-guide').addEventListener('click', openGuide);
+$('btn-close-guide').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });
 
 // ---- Loading ----
 EventBus.on('load_progress', (p: number) => {

@@ -2,6 +2,8 @@
 // GIAO TIẾP VỚI UI BẰNG HTML DOM (UI BRIDGE)
 // ==========================================
 import { CHARACTER_CONFIG, CharacterType } from './utils/CharacterConfig';
+import { NORMAL_ENEMIES } from './utils/EnemyConfig';
+import { SkillManager } from './utils/SkillManager';
 
 // Helper functions to draw classes and entities on Canvas 2D Context
 
@@ -398,6 +400,7 @@ export const UIBridge = {
         document.getElementById('intro-modal')?.classList.add('hidden');
         document.getElementById('shop-modal')?.classList.add('hidden');
         document.getElementById('settings-modal')?.classList.add('hidden');
+        document.getElementById('guide-modal')?.classList.add('hidden');
     },
 
     // Hiển thị và cài đặt màn hình Menu chính
@@ -987,6 +990,100 @@ export const UIBridge = {
     // Ẩn UI Tạm Dừng
     hidePause(): void {
         document.getElementById('pause-ui')?.classList.add('hidden');
+    },
+
+    // ============================================================
+    // HƯỚNG DẪN CHƠI (HOW TO PLAY) — dựng nội dung từ config game
+    // ============================================================
+    renderGuide(): void {
+        const body = document.getElementById('guide-body');
+        if (!body) return;
+
+        // Một thẻ mục với header rõ ràng, có khoảng cách
+        const sec = (color: string, title: string, inner: string) => `<div class="cyber-panel rounded-2xl p-4 flex flex-col gap-3">
+            <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full shrink-0" style="background:${color}"></span><span class="font-bold text-[11px] tracking-[0.18em] uppercase text-white/90">${title}</span></div>${inner}</div>`;
+        // Hàng hai dòng: tên đậm ở trên, mô tả thoáng ở dưới
+        const row = (color: string, name: string, desc: string) => `<div class="flex gap-2.5 items-start">
+            <span class="w-1.5 h-1.5 rounded-full shrink-0 mt-1.5" style="background:${color}"></span>
+            <div><div class="font-bold text-[12.5px]" style="color:${color}">${name}</div><div class="text-[11.5px] text-slate-400 leading-relaxed">${desc}</div></div></div>`;
+        const chip = (color: string, label: string) => `<span class="rounded-full px-2.5 py-1 text-[11px] bg-slate-900/60 border border-white/10 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full shrink-0" style="background:${color}"></span>${label}</span>`;
+
+        const objective = sec('#ffd700', 'Objective',
+            `<div class="text-[12px] text-slate-300 leading-relaxed">Survive the endless swarm. Move to dodge — your hero <b class="text-cyan-400">auto-attacks</b> the nearest foes. Collect green <b class="text-emerald-400">XP gems</b> to level up and pick new powers. Survive each stage, defeat its <b class="text-rose-400">Boss</b>, then step into the <b class="text-fuchsia-400">portal</b> to advance. Clear <b class="text-amber-400">Stage 3</b> → <b class="text-emerald-400">YOU WIN</b>.</div>`);
+
+        const controls = sec('#00f0ff', 'Controls', [
+            row('#00f0ff', 'Move', 'Touch &amp; drag anywhere to steer with the virtual joystick. Release to stop.'),
+            row('#ffd700', 'Auto-Attack', 'Your weapon fires on its own at the closest enemy — just focus on dodging &amp; positioning.'),
+            row('#94a3b8', 'Pause', 'Tap the pause button (top-right) to freeze the battle and adjust audio.'),
+        ].join(''));
+
+        // Hero classes — dựng từ CHARACTER_CONFIG
+        const heroRows = (Object.keys(CHARACTER_CONFIG) as CharacterType[]).map((k) => {
+            const c = CHARACTER_CONFIG[k];
+            const label = c.name.replace('Class: ', '');
+            return `<div class="flex items-center justify-between gap-3 text-[12px]"><span class="font-bold shrink-0 text-white">${label}</span><span class="text-slate-400 text-[10.5px] text-right leading-tight">${c.weaponName.replace('Weapon: ', '')}<br>HP ${c.baseHp} · SPD ${c.baseSpeed} · DMG ${c.baseDamage}</span></div>`;
+        }).join('');
+        const heroes = sec('#00f0ff', 'Heroes', `<div class="flex flex-col gap-2.5">${heroRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">Unlock &amp; switch classes in the SHOP. Knight starts unlocked.</div>`);
+
+        // Skill upgrades — dựng từ SkillManager
+        const zeroLv = { attackSpeed: 0, moveSpeed: 0, thorns: 0, multiShot: 0, shield: 0, lightning: 0, attackRange: 0 };
+        const skillRows = SkillManager.getAvailableSkills(zeroLv).map((s) =>
+            `<div class="text-[12px] leading-relaxed"><span class="font-bold text-cyan-400">${s.name}</span> <span class="text-slate-400">— ${s.desc}</span></div>`
+        ).join('');
+        const skills = sec('#a855f7', 'Level-Up Skills', `<div class="flex flex-col gap-2">${skillRows}</div><div class="text-[11px] text-slate-400 leading-relaxed">On level-up, time freezes and you pick 1 of 3 random upgrades. Stack them to grow stronger.</div>`);
+
+        // Enemies — dựng từ NORMAL_ENEMIES (bỏ thực thể không phải quái: lich_orb, crystal_spike)
+        const skillVerb: Record<string, string> = { leap: 'leaps at you', chase: 'chases you down', wander: 'roams the field', charge: 'charges in a straight line', shoot: 'fires projectiles' };
+        const enemyChips = Object.values(NORMAL_ENEMIES)
+            .filter((e) => e.id !== 'lich_orb' && e.id !== 'crystal_spike')
+            .map((e) => chip(e.colorStr, `${e.name} <span class="text-slate-500">· ${skillVerb[e.skill] ?? e.skill}</span>`))
+            .join('');
+        const enemies = sec('#ff3b30', 'Enemies & Bosses', `<div class="flex flex-wrap gap-2">${enemyChips}</div><div class="text-[11px] text-slate-400 leading-relaxed mt-1">Every 30s the swarm enrages and grows tougher. At ~50s a <b class="text-rose-400">Stage Boss</b> appears — telegraphed leaps, projectile rings &amp; lightning. Beat it to open the portal.</div>`);
+
+        // Items / collectibles
+        const items = sec('#34d399', 'Drops & Power-Ups', `<div class="flex flex-col gap-1.5 text-[11.5px] text-slate-400 leading-relaxed">
+            <div><b class="text-emerald-400">XP Gem</b> — fills the XP bar to level up.</div>
+            <div><b class="text-yellow-400">Gold Coin</b> — spend in the SHOP between runs.</div>
+            <div><b class="text-rose-400">Heart</b> — restores HP. <b class="text-cyan-400">Magnet</b> — pulls in every drop.</div>
+            <div><b class="text-sky-400">Shield</b> — brief invulnerability. <b class="text-indigo-300">Freeze Clock</b> — stops enemies.</div>
+            <div><b class="text-orange-400">Bomb</b> — clears the screen. <b class="text-amber-300">Double XP</b> — 2× XP for 10s.</div>
+        </div>`);
+
+        // Progression
+        const progress = sec('#fbbf24', 'Progression', `<div class="text-[11.5px] text-slate-400 leading-relaxed">Gold persists between runs. In the <b class="text-amber-400">SHOP</b> buy permanent boosts to <b class="text-cyan-400">Max HP</b>, <b class="text-cyan-400">Speed</b> &amp; <b class="text-cyan-400">Damage</b>, or unlock new heroes. Die or win → gold banked → upgrade → dive back in.</div>`);
+
+        const tips = sec('#34d399', 'Survival Tips', `<div class="flex flex-col gap-2">` + [
+            'Keep moving — standing still gets you swarmed.',
+            'Grab XP gems fast to out-level the rising difficulty.',
+            'Save Bombs &amp; Freeze for the boss or a tight crowd.',
+            'Bank gold and upgrade HP early so you live long enough to scale damage.',
+        ].map((t) => `<div class="flex gap-2 text-[11.5px] text-slate-300 leading-relaxed"><span class="shrink-0 text-emerald-400">▸</span>${t}</div>`).join('') + `</div>`);
+
+        body.innerHTML = objective + controls + heroes + skills + enemies + items + progress + tips;
+    },
+
+    // Một opener duy nhất, hai trigger (menu + pause) — cùng modal, đè lên trên (z-60)
+    openGuide(): void {
+        this.renderGuide();
+        const modal = document.getElementById('guide-modal');
+        if (modal) modal.classList.remove('hidden');
+        const body = document.getElementById('guide-body');
+        if (body) body.scrollTop = 0;
+        this.refreshIcons();
+    },
+
+    hideGuide(): void {
+        document.getElementById('guide-modal')?.classList.add('hidden');
+    },
+
+    // Gắn 3 nút hướng dẫn (chạy một lần, các phần tử luôn có trong DOM)
+    setupGuide(): void {
+        const open = document.getElementById('open-guide-btn');
+        if (open) open.onclick = () => this.openGuide();
+        const pauseOpen = document.getElementById('pause-guide-btn');
+        if (pauseOpen) pauseOpen.onclick = () => this.openGuide();
+        const close = document.getElementById('close-guide-btn');
+        if (close) close.onclick = () => this.hideGuide();
     },
 
     // Tự động quét lại các thẻ data-lucide để chèn SVG

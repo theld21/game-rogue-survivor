@@ -7,7 +7,7 @@ import World from './scenes/World.ts';
 import EventBus from './EventBus.ts';
 import GameState from './core/GameState.ts';
 import AudioManager from './core/AudioManager.ts';
-import { UPGRADES, UpgradeKey, ELEMENT_KINDS, ELEMENTS, CSS } from './config.ts';
+import { UPGRADES, UpgradeKey, ELEMENT_KINDS, ELEMENTS, CSS, ENEMY, POWERUPS, POWER_KINDS, RUN, SHIP, BOOST } from './config.ts';
 
 // ---- Phaser (DPR-aware FIT, see playbook §1) ----
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -43,6 +43,8 @@ const ICONS: Record<string, string> = {
   heart: sv('<path d="M12 21s-7-4.5-9.3-9A5 5 0 0 1 12 6a5 5 0 0 1 9.3 6c-2.3 4.5-9.3 9-9.3 9z"/>'),
   boost: sv('<path d="M13 2L4 14h6l-1 8 9-12h-6z"/>'),
   core: sv('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'),
+  book: sv('<path d="M3 5.5A1.5 1.5 0 0 1 4.5 4H11v15.5H4.5A1.5 1.5 0 0 0 3 21z"/><path d="M21 5.5A1.5 1.5 0 0 0 19.5 4H13v15.5h6.5A1.5 1.5 0 0 1 21 21z"/>'),
+  move: sv('<path d="M12 4v16M4 12h16M12 4l-2.4 2.4M12 4l2.4 2.4M12 20l-2.4-2.4M12 20l2.4 2.4M4 12l2.4-2.4M4 12l2.4 2.4M20 12l-2.4-2.4M20 12l2.4 2.4"/>'),
 };
 document.querySelectorAll('[data-ic]').forEach((el) => { const k = (el as HTMLElement).dataset.ic!; if (ICONS[k]) el.innerHTML = ICONS[k]; });
 
@@ -52,7 +54,7 @@ EventBus.on('load_complete', () => { const el = $('loading-screen'); gsap.to(el,
 
 // ---- Menu ----
 EventBus.on('enter_menu', () => {
-  ['hud', 'planet-panel', 'minimap-panel', 'hangar-panel', 'pause-panel', 'dead-overlay', 'gameover-overlay', 'win-overlay', 'settings-panel', 'event-banner'].forEach(hide);
+  ['hud', 'planet-panel', 'minimap-panel', 'hangar-panel', 'pause-panel', 'dead-overlay', 'gameover-overlay', 'win-overlay', 'settings-panel', 'guide-panel', 'event-banner'].forEach(hide);
   $('menu-credits').textContent = String(GameState.getCredits());
   $('menu-medal').style.display = GameState.hasWon() ? 'flex' : 'none';
   show('menu-overlay');
@@ -285,3 +287,59 @@ wireSlider('music-vol', 'music-val', (v) => { AudioManager.setMusicVolume(v); Ga
 wireSlider('sfx-vol', 'sfx-val', (v) => { AudioManager.setSfxVolume(v); GameState.setSfxVol(v); });
 let resetPending = false;
 $('btn-reset').addEventListener('click', () => { AudioManager.uiTap(); if (!resetPending) { resetPending = true; $('reset-label').textContent = 'Tap again to confirm'; setTimeout(() => { resetPending = false; $('reset-label').textContent = 'Reset All Data'; }, 3000); } else { GameState.reset(); resetPending = false; $('reset-label').textContent = 'Reset All Data'; hide('settings-panel'); $('menu-credits').textContent = '0'; } });
+
+// ---- How to Play (built from config so it never drifts from the real game) ----
+const ENEMY_INFO: { key: 'worm' | 'pirate' | 'leviathan'; name: string; color: string; desc: string }[] = [
+  { key: 'worm', name: 'Sky Worm', color: '#76e08a', desc: 'Slow chaser that rams the hull. Watch your back in open sky.' },
+  { key: 'pirate', name: 'Sky Pirate', color: '#8af7ff', desc: 'Fast raider that strafes and shoots from range. Keep moving.' },
+  { key: 'leviathan', name: 'Leviathan', color: '#b06bff', desc: 'Huge, tanky brute — heavy ram damage. Unlocks as the Heart evolves.' },
+];
+function renderGuide(): void {
+  const sec = (color: string, title: string, inner: string) => `<div class="glass rounded-2xl p-4 flex flex-col gap-3.5">
+    <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span><span class="font-display font-bold text-[12px] tracking-[0.2em] uppercase text-ink/90">${title}</span></div>${inner}</div>`;
+  const row = (icon: string, color: string, name: string, body: string) => `<div class="flex gap-3 items-start">
+    <span class="w-6 h-6 flex-none mt-0.5" style="color:${color}">${ICONS[icon] ?? ''}</span>
+    <div><div class="font-display font-bold text-[13px]" style="color:${color}">${name}</div><div class="font-body text-[12.5px] text-ink/65 leading-relaxed">${body}</div></div></div>`;
+  const chip = (color: string, label: string, extra = '') => `<span class="glass rounded-full px-2.5 py-1 text-[11.5px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+
+  const objective = sec('#ffcf5a', 'Objective', `<div class="font-body text-[12.5px] text-ink/70 leading-relaxed">Sail an airship across a vast open sky and gather all <b style="color:#8af7ff">${ELEMENT_KINDS.length} elements</b> — each mined from its own floating isle. Deliver them to the <b style="color:#ffcf5a">Mother</b> at spawn to evolve the Heart of the Sky through <b style="color:#8af7ff">${RUN.motherTiers.length} tiers</b>. Fill the final tier → <b style="color:#ffcf5a">YOU WIN</b>.</div>`);
+
+  const controls = sec('#4fe0d8', 'Controls', [
+    row('move', '#4fe0d8', 'Fly', 'Touch & drag the lower screen to thrust in any direction. The ship glides with inertia — ease off to drift.'),
+    row('boost', '#ffcf5a', 'Boost', `Hold to surge forward (×${BOOST.mult} speed) — burns fuel ${BOOST.fuelMult}× faster.`),
+    row('target', '#ff5a47', 'Cannon', 'Hold to fire arc bolts at enemies. Slain foes can drop power-ups.'),
+    row('map', '#8af7ff', 'Sky Chart', 'Open the map to find isles. The radar compass shows nearby points of interest.'),
+    row('wrench', '#ffcf5a', 'Hangar', 'Dock at the Forge isle (or open from the menu) to buy permanent upgrades with ◈ credits.'),
+  ].join(''));
+
+  const survival = sec('#76e08a', 'Survival', [
+    row('shield', '#76e08a', 'Hull', `Integrity (max ${SHIP.maxHp}). Hits 0 → you crash and lose a life.`),
+    row('fuel', '#ffcf5a', 'Fuel', `Burns while thrusting; idles slow. Empty → limp home at ${Math.round(SHIP.emptyFuelMult * 100)}% speed. Refuel at Storm isles.`),
+    row('heart', '#ff5a47', 'Lives', `You start with ${RUN.lives} lives. Crash with cargo and you lose it all. Out of lives → GAME OVER.`),
+  ].join('') + `<div class="font-body text-[12.5px] text-ink/65 leading-relaxed">Fly near <b style="color:#76e08a">Heal</b> isles to mend the hull and <b style="color:#6ea8ff">Storm</b> isles to refuel — no docking needed, just stay close.</div>`);
+
+  const isles = sec('#b06bff', 'Floating Isles', `<div class="flex flex-col gap-2 text-[12.5px]">
+    <div><span class="font-display font-bold" style="color:#ffcf5a">Mother</span> <span class="text-ink/60">— deliver elements here to evolve the Heart and win.</span></div>
+    <div><span class="font-display font-bold" style="color:#4fe0d8">Element</span> <span class="text-ink/60">— dock to harvest its element into your cargo (+${RUN.collectPerSec}/s).</span></div>
+    <div><span class="font-display font-bold" style="color:#76e08a">Heal</span> <span class="text-ink/60">— fly close to restore hull integrity.</span></div>
+    <div><span class="font-display font-bold" style="color:#6ea8ff">Storm</span> <span class="text-ink/60">— fly close to recharge Aether fuel.</span></div>
+    <div><span class="font-display font-bold" style="color:#ffa052">Forge</span> <span class="text-ink/60">— dock to spend credits on ship upgrades.</span></div>
+  </div>`);
+
+  const enemies = sec('#ff5a47', 'Enemies', ENEMY_INFO.map((e) => `<div class="flex items-baseline gap-2 text-[12.5px] leading-relaxed"><span class="font-display font-bold flex-none" style="color:${e.color}">${e.name}</span><span class="text-ink/65">${e.desc}</span></div>`).join('') + `<div class="font-body text-[11.5px] text-ink/50 leading-relaxed">Up to ${ENEMY.maxAlive} prowl the sky at once. Each kill earns ◈ credits.</div>`);
+
+  const powers = sec('#ff7a3c', 'Power-ups (dropped by enemies)', `<div class="flex flex-wrap gap-2">` + POWER_KINDS.map((k) => chip(POWERUPS[k].css, POWERUPS[k].name)).join('') + `</div>`);
+
+  const res = sec('#c9b690', 'Elements', `<div class="flex flex-wrap gap-2">` + ELEMENT_KINDS.map((k) => chip(ELEMENTS[k].css, ELEMENTS[k].name)).join('') + `</div>`);
+
+  const ups = sec('#ffa052', 'Upgrades (buy with ◈ at the Forge / Hangar)', `<div class="flex flex-col gap-2.5">` + (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => { const u = UPGRADES[k]; return `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${UMETA[k].color}">${u.name}</span><span class="text-ink/55 text-[11px] text-right leading-tight">${u.desc} · max ${u.max}</span></div>`; }).join('') + `</div>`);
+
+  const tips = sec('#4fe0d8', 'Sky Tips', `<div class="flex flex-col gap-2">` + ['Top up fuel at Storm isles before long crossings — running dry leaves you crawling.', 'Sell time at Element isles, then deliver in bulk to the Mother to climb tiers fast.', 'Kill enemies for ◈ credits and power-up drops, but don\'t fight far from a Heal isle.', 'Use the Sky Chart often — the world is big and isles are spread out.'].map((t) => `<div class="flex gap-2.5 text-[12.5px] text-ink/70 leading-relaxed"><span class="flex-none" style="color:#4fe0d8">▸</span>${t}</div>`).join('') + `</div>`);
+
+  $('guide-body').innerHTML = objective + controls + survival + isles + enemies + powers + res + ups + tips;
+}
+// One opener, two triggers (menu + in-game pause) — same modal, layered on top (z-50 > pause z-40).
+const openGuide = () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; };
+$('btn-guide').addEventListener('click', openGuide);
+$('btn-pause-guide').addEventListener('click', openGuide);
+$('btn-guide-close').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });

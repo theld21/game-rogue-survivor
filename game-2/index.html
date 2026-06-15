@@ -110,6 +110,10 @@
             Enter Orbit
           </button>
           
+          <button id="btn-guide" class="w-full py-3.5 bg-[#171032cf] border border-[#00f0ff40] text-[#00f0ff] font-bold uppercase text-xs tracking-[0.15em] rounded-xl shadow-[0_0_12px_rgba(0,240,255,0.1)] hover:bg-[#00f0ff] hover:text-black transition-all duration-150 font-orbitron flex items-center justify-center gap-2">
+            <span class="text-base leading-none">📖</span> How To Play
+          </button>
+
           <div class="grid grid-cols-2 gap-3">
             <button id="btn-shop" class="py-3.5 bg-[#171032cf] border border-[#d946ef40] text-[#d946ef] font-bold uppercase text-xs tracking-wider rounded-xl shadow-[0_0_12px_rgba(217,70,239,0.1)] hover:bg-[#d946ef] hover:text-black transition-all duration-150 font-orbitron">
               Upgrades
@@ -234,6 +238,9 @@
           <button id="btn-resume" class="py-4 bg-[#00f0ff] text-black font-black uppercase text-xs tracking-wider rounded-xl shadow-[0_0_15px_rgba(0,240,255,0.3)] font-orbitron active:scale-95 transition-all duration-100">
             Resume Game
           </button>
+          <button id="btn-pause-guide" class="py-3 bg-[#171032cf] border border-[#00f0ff40] text-[#00f0ff] font-bold uppercase text-xs tracking-wider rounded-xl font-orbitron active:scale-95 transition-all duration-100 flex items-center justify-center gap-2">
+            <span class="text-base leading-none">📖</span> How To Play
+          </button>
           <button id="btn-quit" class="py-3 bg-[#1e102f] border border-[#ff007f50] text-[#ff007f] font-bold uppercase text-xs tracking-wider rounded-xl font-orbitron active:scale-95 transition-all duration-100">
             Abandon Orbit
           </button>
@@ -251,27 +258,40 @@
             <button id="btn-settings-close" class="btn btn-sm btn-circle btn-ghost border border-[#ffffff10] text-slate-300">✕</button>
           </div>
 
-          <div class="max-w-md w-full mx-auto space-y-6 mt-8 bg-[#120a28] border border-[#ffffff04] rounded-2xl p-6 shadow-inner">
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Synth Music</span>
-                <span id="lbl-settings-music" class="text-xs font-bold text-[#00f0ff] font-orbitron">80%</span>
+          <div class="max-w-md w-full mx-auto mt-6 max-h-[62vh] overflow-y-auto pr-1 space-y-4">
+            <div class="space-y-6 bg-[#120a28] border border-[#ffffff04] rounded-2xl p-6 shadow-inner">
+              <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">Synth Music</span>
+                  <span id="lbl-settings-music" class="text-xs font-bold text-[#00f0ff] font-orbitron">80%</span>
+                </div>
+                <input id="slider-settings-music" type="range" min="0" max="100" value="80" class="w-full h-1.5 rounded-lg outline-none appearance-none cursor-pointer">
               </div>
-              <input id="slider-settings-music" type="range" min="0" max="100" value="80" class="w-full h-1.5 rounded-lg outline-none appearance-none cursor-pointer">
+
+              <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">VFX Sounds</span>
+                  <span id="lbl-settings-sfx" class="text-xs font-bold text-[#ff007f] font-orbitron">90%</span>
+                </div>
+                <input id="slider-settings-sfx" type="range" min="0" max="100" value="90" class="w-full h-1.5 rounded-lg outline-none appearance-none cursor-pointer">
+              </div>
             </div>
 
-            <div class="flex flex-col gap-2">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-widest">VFX Sounds</span>
-                <span id="lbl-settings-sfx" class="text-xs font-bold text-[#ff007f] font-orbitron">90%</span>
+            <!-- ABOUT / DEV -->
+            <div class="bg-[#120a28] border border-[#ffffff04] rounded-2xl p-6 shadow-inner">
+              <h3 class="text-xs font-black text-[#d946ef] uppercase tracking-[0.18em] font-orbitron mb-3">About</h3>
+              <div class="space-y-2 text-[12px] text-slate-300 font-outfit">
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Game</span><span class="text-right">Neon Orbit: Gravity Jump · v1.0</span></div>
+                <div class="flex justify-between gap-3"><span class="text-slate-500">Author</span><span class="text-right">Le Duy The <span class="text-[#00f0ff]">(theld21)</span></span></div>
+                <div class="flex justify-between gap-3"><span class="text-slate-500 flex-none">Contact</span><a href="mailto:thedev.ldt@gmail.com" class="text-[#00f0ff] underline break-all text-right">thedev.ldt@gmail.com</a></div>
               </div>
-              <input id="slider-settings-sfx" type="range" min="0" max="100" value="90" class="w-full h-1.5 rounded-lg outline-none appearance-none cursor-pointer">
+              <div class="mt-3 space-y-2 text-[11.5px] text-slate-400 leading-relaxed font-outfit">
+                <p>A zero-asset, single-thumb arcade orbiter — slingshot between neon planets, harvest energy shards, and survive 20 sectors of gravity puzzles. Every visual is drawn live in code.</p>
+                <p class="flex gap-2"><span class="flex-none">🔒</span><span><b class="text-slate-300">No data collected.</b> All progress is saved locally on the device. No servers, no accounts, no ads, no analytics, no tracking. Works offline.</span></p>
+              </div>
+              <p class="text-[10px] text-slate-600 uppercase tracking-widest font-bold mt-3 font-orbitron">© 2026 theld21</p>
             </div>
           </div>
-        </div>
-
-        <div class="text-center mb-4">
-          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Neon Orbit v1.0.0 Premium</p>
         </div>
       </div>
 
@@ -309,6 +329,15 @@
             </button>
           </div>
         </div>
+      </div>
+
+      <!-- HOW TO PLAY OVERLAY (full-screen, above pause/settings) -->
+      <div id="guide-overlay" style="display: none; pointer-events: none;" class="absolute inset-0 bg-[#06030cf7] z-50 flex flex-col p-5 pt-[env(safe-area-inset-top,20px)] pb-[env(safe-area-inset-bottom,16px)]">
+        <div class="flex justify-between items-center mb-4 flex-none">
+          <h2 class="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#d946ef] uppercase font-orbitron">How To Play</h2>
+          <button id="btn-guide-close" class="btn btn-sm btn-circle btn-ghost border border-[#ffffff10] text-slate-300">✕</button>
+        </div>
+        <div id="guide-body" class="flex-1 overflow-y-auto pr-1 flex flex-col gap-3.5 max-w-md w-full mx-auto"></div>
       </div>
 
     </div>

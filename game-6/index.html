@@ -51,6 +51,9 @@
             <span class="text-[9px] text-neonYellow/60 uppercase">CR</span>
           </div>
           <div class="flex gap-2 pointer-events-auto">
+            <button id="btn-menu-guide" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-neonCyan" title="How to Play">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20"/></svg>
+            </button>
             <button id="btn-menu-shop" class="w-10 h-10 rounded-xl glass flex items-center justify-center text-neonPink" title="Upgrade Bay">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9h18v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M8 13h8"/></svg>
             </button>
@@ -144,6 +147,9 @@
         <h2 class="font-display font-bold text-3xl text-neonCyan mb-8" style="text-shadow:0 0 18px rgba(34,227,255,0.5)">PAUSED</h2>
         <div class="flex flex-col gap-3 w-full max-w-xs">
           <button id="btn-resume" class="neon-btn py-3 rounded-xl font-display font-bold uppercase tracking-wider text-nightInk" style="background:linear-gradient(90deg,#22e3ff,#9dff5c)">Resume</button>
+          <button id="btn-pause-guide" class="neon-btn py-3 rounded-xl font-display font-bold uppercase tracking-wider bg-white/5 border border-neonCyan/40 text-neonCyan flex items-center justify-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20"/></svg>How to Play
+          </button>
           <button id="btn-pause-retry" class="neon-btn py-3 rounded-xl font-display font-bold uppercase tracking-wider bg-white/5 border border-white/20 text-white">Restart</button>
           <button id="btn-pause-quit" class="neon-btn py-3 rounded-xl font-display font-bold uppercase tracking-wider bg-white/5 border border-hullBad/40 text-hullBad">Abort</button>
         </div>
@@ -177,7 +183,7 @@
 
       <!-- SETTINGS -->
       <div id="settings-panel" style="display:none" class="absolute inset-0 z-50 pointer-events-auto bg-nightInk/90 backdrop-blur-md flex flex-col items-center justify-center p-6">
-        <div class="w-full max-w-sm glass rounded-3xl p-5">
+        <div class="w-full max-w-sm glass rounded-3xl p-5 max-h-[88vh] overflow-y-auto panel-scroll">
           <div class="flex items-center justify-between mb-5">
             <h2 class="font-display font-bold text-xl text-neonCyan">SETTINGS</h2>
             <button id="btn-close-settings" class="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
@@ -192,8 +198,34 @@
             <div class="flex items-center justify-between mb-2"><p class="text-[10px] uppercase tracking-widest text-white/50 font-mono">SFX</p><span id="sfx-val" class="text-xs font-mono text-neonCyan">80%</span></div>
             <input id="sfx-vol" type="range" min="0" max="100" value="80" class="vol-slider w-full" />
           </div>
+          <!-- ABOUT / DEV -->
+          <div class="mb-5 pt-4 border-t border-white/10">
+            <p class="font-display font-bold text-sm tracking-[0.18em] text-neonPink mb-3 uppercase">About</p>
+            <div class="font-body text-[12.5px] text-white/70 leading-relaxed flex flex-col gap-2">
+              <div class="flex justify-between gap-3"><span class="text-white/40">Game</span><span class="text-right">Neon Transporter: Gravity Rush <span class="text-white/40">·</span> <span class="text-neonCyan font-mono">v1.0</span></span></div>
+              <div class="flex justify-between gap-3"><span class="text-white/40">Author</span><span class="text-right">Le Duy The <span class="text-neonPink">(theld21)</span></span></div>
+              <div class="flex justify-between gap-3"><span class="text-white/40 flex-none">Contact</span><a href="mailto:thedev.ldt@gmail.com" class="text-neonCyan underline break-all text-right">thedev.ldt@gmail.com</a></div>
+            </div>
+            <div class="font-body text-[12px] text-white/55 leading-relaxed mt-3 flex flex-col gap-1.5">
+              <div>Fly a gravity-bound delivery drone, magnet-haul fragile cargo through neon corridors, and stick the landing. Built with Phaser — runs fully offline in your browser.</div>
+              <div class="flex gap-2"><span class="flex-none">🔒</span><span><b class="text-white/75">No data collected.</b> All progress is saved locally on your device. No servers, no accounts, no ads, no analytics, no tracking. Works offline.</span></div>
+            </div>
+            <div class="font-body text-[11px] text-white/35 mt-3">© 2026 theld21</div>
+          </div>
+
           <button id="btn-reset" class="w-full border border-hullBad/40 text-hullBad font-display font-bold text-sm py-2.5 rounded-xl uppercase tracking-wider"><span id="reset-label">Reset All Data</span></button>
         </div>
+      </div>
+
+      <!-- HOW TO PLAY -->
+      <div id="guide-panel" style="display:none" class="absolute inset-0 z-50 pointer-events-auto bg-nightInk/95 backdrop-blur-md flex flex-col p-4 pt-[max(env(safe-area-inset-top),16px)] pb-[max(env(safe-area-inset-bottom),16px)]">
+        <div class="flex items-center justify-between mb-3 px-1 max-w-md w-full mx-auto">
+          <h2 class="font-display font-bold text-2xl" style="background:linear-gradient(90deg,#22e3ff,#ff4fa3,#ffd83d);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">HOW TO PLAY</h2>
+          <button id="btn-guide-close" class="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/70">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div id="guide-body" class="flex-1 overflow-y-auto panel-scroll flex flex-col gap-3 px-1 pb-2 max-w-md w-full mx-auto pop-in"></div>
       </div>
 
       <div id="toast-container" class="absolute top-24 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none"></div>

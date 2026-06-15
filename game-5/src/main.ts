@@ -8,7 +8,7 @@ import Shop from './scenes/Shop.ts';
 import EventBus from './EventBus.ts';
 import GameState from './core/GameState.ts';
 import AudioManager from './core/AudioManager.ts';
-import { UPGRADES, UpgradeKey, CONSUMABLES, ConsumableKey } from './config.ts';
+import { UPGRADES, UpgradeKey, CONSUMABLES, ConsumableKey, ITEMS, ItemKind, ASTEROIDS, AsteroidKind, HAZARDS, LEVELS, GUN, RARITY_CSS, CSS } from './config.ts';
 
 // =====================================================================
 // main.ts — Phaser bootstrap + HTML/Tailwind overlay driver.
@@ -68,6 +68,12 @@ const ICONS = {
   overcharge: svg('<polygon points="11 2 4 13 10 13 9 22 16 11 10 11 11 2" fill="currentColor" stroke="none"/>'),
   // multishot (spread)
   multishot: svg('<path d="M12 20V8"/><path d="m6 20 2-9"/><path d="m18 20-2-9"/><circle cx="12" cy="5" r="2.5"/>'),
+  // book / guide
+  book: svg('<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>'),
+  // hull / ship damage warning
+  hull: svg('<path d="M3 18 5 9h14l2 9"/><path d="M5 9V5h14v4"/><path d="M3 18h18"/><line x1="9" y1="13" x2="15" y2="13"/>'),
+  // timer
+  timer: svg('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><line x1="9" y1="2" x2="15" y2="2"/>'),
 };
 
 const CONSUMABLE_ICONS: Record<string, string> = {
@@ -75,12 +81,6 @@ const CONSUMABLE_ICONS: Record<string, string> = {
   overcharge: ICONS.overcharge,
   multishot: ICONS.multishot,
 };
-
-/** Render an inline SVG icon string into an element keyed by id. */
-function setIcon(id: string, icon: string): void {
-  const el = document.getElementById(id);
-  if (el) el.innerHTML = icon;
-}
 
 const UPGRADE_META: Record<UpgradeKey, { name: string; desc: string; icon: string; color: string }> = {
   laser: { name: 'Laser Intensity', desc: 'Break asteroids faster', icon: ICONS.laser, color: '#00f0ff' },
@@ -96,11 +96,8 @@ EventBus.on('load_progress', (p: number) => {
   ($('loading-bar') as HTMLElement).style.width = Math.round(p * 100) + '%';
 });
 EventBus.on('load_complete', () => {
-  // Populate static how-to-play icons once
-  setIcon('how-1', ICONS.laser);
-  setIcon('how-2', ICONS.claw);
-  setIcon('how-3', ICONS.bolt);
-  setIcon('how-4', ICONS.shield);
+  // Put the book glyph inside the two HOW TO PLAY buttons (menu + pause)
+  document.querySelectorAll('#btn-guide span, #btn-pause-guide span').forEach((s) => (s.innerHTML = ICONS.book));
   const el = $('loading-screen');
   gsap.to(el, { opacity: 0, duration: 0.5, onComplete: () => (el.style.display = 'none') });
 });
@@ -370,6 +367,82 @@ $('btn-reset').addEventListener('click', () => {
     renderMenu();
   }
 });
+
+// =====================================================================
+// How to Play — built from config so it never drifts from the balance.
+// One opener, two triggers (menu + in-game pause). z-50 layers over pause.
+// =====================================================================
+function renderGuide(): void {
+  // Section card with a spaced-out colour-chipped header.
+  const sec = (color: string, title: string, inner: string) => `<div class="bg-voidDeep/50 border border-white/5 rounded-2xl p-4 flex flex-col gap-3 backdrop-blur-md">
+    <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span><span class="font-display font-bold text-[12px] tracking-[0.2em] uppercase text-white/90">${title}</span></div>${inner}</div>`;
+  // Two-line control row: bold name on top, airy description below.
+  const row = (icon: string, color: string, name: string, body: string) => `<div class="flex gap-3 items-start">
+    <span class="w-6 h-6 flex-none mt-0.5" style="color:${color}">${icon}</span>
+    <div><div class="font-display font-bold text-[13px]" style="color:${color}">${name}</div><div class="font-body text-[12.5px] text-white/65 leading-relaxed">${body}</div></div></div>`;
+  const chip = (color: string, label: string, extra = '') => `<span class="bg-voidDeep/70 border border-white/10 rounded-full px-2.5 py-1 text-[11.5px] flex items-center gap-1.5"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+
+  const objective = sec(CSS.cyan, 'Objective', `<div class="font-body text-[12.5px] text-white/70 leading-relaxed">Mine asteroids for credits and <b style="color:${CSS.hull}">survive the timer</b> — when it hits zero the sector is <b style="color:${CSS.hull}">CLEARED</b>. Bank credits between runs to buy upgrades, then push deeper through <b style="color:${CSS.cyan}">${LEVELS.maxLevel} sectors</b>.</div>`);
+
+  const controls = sec(CSS.cyan, 'Controls', [
+    row(ICONS.laser, CSS.cyan, 'Laser', 'The gun sweeps back and forth. Tap the screen to fire a bolt and crack open asteroids.'),
+    row(ICONS.claw, CSS.gold, 'Claw', 'Once an asteroid breaks, tap the bottom pill to switch to the claw — tap to launch it and grab the loot.'),
+    row(ICONS.fuel, CSS.hull, 'Energy', 'Hauling heavy loot drains energy and retracts the claw slowly. Energy recharges on its own.'),
+    row(ICONS.bolt, CSS.purple, 'Consumables', 'Tap the icons on the left to trigger combat boosts you bought in the shop.'),
+  ].join(''));
+
+  const survival = sec(CSS.magma, 'Survival', [
+    row(ICONS.hull, CSS.hull, 'Hull', `Asteroids and Volatile Cores that hit your ship deal hull damage. Reach 0 → <b style="color:${CSS.magma}">HULL BREACH</b> and you lose the run (salvage 50% of credits).`),
+    row(ICONS.timer, CSS.cyan, 'Timer', `Outlast it. Each sector runs ${LEVELS.durationSec}s + ${LEVELS.durationGrowSec}s per level, and asteroids come faster the deeper you go.`),
+  ].join(''));
+
+  // Loot vs hazards split out of ITEMS by the `hazard` flag.
+  const itemKeys = Object.keys(ITEMS) as ItemKind[];
+  const loot = itemKeys.filter((k) => !ITEMS[k].hazard);
+  const hazards = itemKeys.filter((k) => ITEMS[k].hazard);
+  const lootHex = (k: ItemKind) => RARITY_CSS[ITEMS[k].rarity] ?? '#fff';
+  const lootSec = sec(CSS.gold, 'Loot — grab these', `<div class="flex flex-wrap gap-2">` +
+    loot.map((k) => chip(lootHex(k), `${ITEMS[k].glyph} ${ITEMS[k].name}`, ` <span class="font-mono ml-0.5" style="color:${CSS.gold}">${ITEMS[k].value}⬡</span>`)).join('') +
+    `</div><div class="font-body text-[11.5px] text-white/55 leading-relaxed">Heavier, rarer loot is worth far more — but drains more energy to haul in.</div>`);
+
+  const hazardSec = sec(CSS.magma, 'Hazards — never haul these', `<div class="flex flex-col gap-2">` +
+    hazards.map((k) => `<div class="text-[12.5px] leading-relaxed"><span class="font-display font-bold" style="color:#${ITEMS[k].color.toString(16).padStart(6, '0')}">${ITEMS[k].glyph} ${ITEMS[k].name}</span> <span class="text-white/65">— ${k === 'bomb' ? `explodes for ${HAZARDS.bombDamage} hull damage if it reaches your ship` : `freezes your gun for ${Math.round(HAZARDS.frostMs / 1000)}s`}.</span></div>`).join('') +
+    `</div>`);
+
+  const rockSec = sec(CSS.ice, 'Asteroids', `<div class="flex flex-col gap-2">` +
+    (Object.keys(ASTEROIDS) as AsteroidKind[]).map((k) => {
+      const a = ASTEROIDS[k]; const c = '#' + a.glow.toString(16).padStart(6, '0');
+      const hits = Math.ceil(a.hp / GUN.laserBaseDamage);
+      return `<div class="flex items-center justify-between gap-2 text-[12.5px]"><span class="font-display font-bold capitalize flex-none" style="color:${c}">${k}</span><span class="text-white/55 text-[11px] text-right leading-tight">${a.hp} HP · ~${hits} bolts</span></div>`;
+    }).join('') +
+    `</div><div class="font-body text-[11.5px] text-white/55 leading-relaxed">Tougher rocks take more bolts but drop richer loot.</div>`);
+
+  const ups = sec(CSS.purple, 'Upgrades — buy with ⬡ in the Upgrade Bay', `<div class="flex flex-col gap-2.5">` +
+    (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => {
+      const m = UPGRADE_META[k];
+      return `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${m.color}">${m.name}</span><span class="text-white/55 text-[11px] text-right leading-tight">${m.desc} · max ${UPGRADES[k].maxLevel}</span></div>`;
+    }).join('') + `</div>`);
+
+  const cons = sec(CSS.pink, 'Consumables — stockpile, then trigger mid-run', `<div class="flex flex-col gap-2.5">` +
+    (Object.keys(CONSUMABLES) as ConsumableKey[]).map((k) => {
+      const c = CONSUMABLES[k];
+      return `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${c.color}">${c.name}</span><span class="text-white/55 text-[11px] text-right leading-tight">${c.desc} · ${Math.round(c.durationMs / 1000)}s</span></div>`;
+    }).join('') + `</div>`);
+
+  const tips = sec(CSS.hull, 'Captain’s Tips', `<div class="flex flex-col gap-2">` +
+    ['Time your tap so the sweeping gun is aimed at an asteroid before you fire.',
+     'Grab high-value loot first — but mind the energy drain on heavy hauls.',
+     'Let bombs and cryo shards drift past; only the claw can grab loot you choose.',
+     'Spend credits in the Upgrade Bay between sectors before the asteroids speed up.'].map((t) =>
+      `<div class="flex gap-2.5 text-[12.5px] text-white/70 leading-relaxed"><span class="flex-none" style="color:${CSS.hull}">▸</span>${t}</div>`).join('') + `</div>`);
+
+  $('guide-body').innerHTML = objective + controls + survival + lootSec + hazardSec + rockSec + ups + cons + tips;
+}
+
+const openGuide = () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; };
+$('btn-guide').addEventListener('click', openGuide);
+$('btn-pause-guide').addEventListener('click', openGuide);
+$('btn-guide-close').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });
 
 // =====================================================================
 // Toasts

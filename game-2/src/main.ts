@@ -7,6 +7,7 @@ import PlayScene from './scenes/PlayScene.ts';
 import EventBus from './EventBus.ts';
 import AudioManager from './utils/AudioManager.ts';
 import GameProgress from './utils/GameProgress.ts';
+import { GAME_CONFIG } from './game/GameConfig.ts';
 
 // -------------------------------------------------------------
 // I. PHASER INSTANCE CONFIGURATION (iOS High-DPI Scale Blueprint)
@@ -613,7 +614,115 @@ function drawDashCharges(remaining: number, max: number): void {
 
 
 // -------------------------------------------------------------
-// III. AUDIO SYNC CONTROLLERS
+// III. HOW TO PLAY GUIDE (built from config so it never drifts)
+// -------------------------------------------------------------
+
+const guideOverlay = document.getElementById('guide-overlay')!;
+const guideBody = document.getElementById('guide-body')!;
+
+// Section card with a clear, spaced header (matches the menu's "card" theme).
+const gSec = (color: string, title: string, inner: string) => `
+  <div class="bg-[#120a2860] border border-[#ffffff08] rounded-2xl p-4 backdrop-blur-md shadow-lg flex flex-col gap-3">
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span>
+      <h3 class="text-[12px] font-black uppercase tracking-[0.18em] font-orbitron" style="color:${color}">${title}</h3>
+    </div>${inner}</div>`;
+// Two-line control row: bold gesture on top, airy description below.
+const gRow = (color: string, name: string, body: string) => `
+  <div class="flex gap-3 items-start">
+    <span class="font-black font-orbitron text-[12px] flex-none mt-0.5 w-16 text-right" style="color:${color}">${name}</span>
+    <p class="text-[12px] text-slate-300 leading-relaxed font-outfit flex-1">${body}</p>
+  </div>`;
+// Color chip.
+const gChip = (color: string, label: string, extra = '') => `
+  <span class="bg-[#ffffff08] rounded-full px-2.5 py-1 text-[11px] text-slate-200 flex items-center gap-1.5 font-outfit">
+    <span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+
+function renderGuide(): void {
+  const C = GAME_CONFIG;
+  const objective = gSec('#fbbf24', 'Objective',
+    `<p class="text-[12.5px] text-slate-300 leading-relaxed font-outfit">You're a particle of light orbiting neon planets. Collect the <b style="color:#d946ef">Energy Shards</b> scattered through each sector to power up the <b style="color:#fbbf24">Goal Planet</b>, then land on it to warp to the next sector. Clear all the way through <b style="color:#00f0ff">Sector 20</b> to conquer the galaxy.</p>`);
+
+  const controls = gSec('#00f0ff', 'Controls — one thumb', [
+    gRow('#ff007f', 'TAP', 'Launch off your orbit, fired tangentially toward the next planet, then snap into orbit when you reach it.'),
+    gRow('#ff007f', 'HOLD', 'Contract your orbit — pulls you to a tighter radius and spins you faster.'),
+    gRow('#ff007f', 'D-TAP', 'Double-tap to reverse your rotation direction 180°.'),
+    gRow('#ff007f', 'SWIPE', `Spend a dash charge for a fast directional burst while flying — correct your path mid-jump.`),
+  ].join(''));
+
+  const planets = gSec('#a855f7', 'Planets', [
+    gRow('#00f0ff', 'Standard', 'A stable anchor. Orbit it and launch when lined up. The first one is your start.'),
+    gRow('#22c55e', 'Bouncy', 'Springs you off with extra force on contact — handy for long gaps.'),
+    gRow('#22c55e', 'Shift Gate', `Cycles green ⟷ orange every ${C.PLANETS.SHIFT_GATE_CYCLE_TIME / 1000}s. Green spins you fast & forward, orange reverses you — time your launch.`),
+    gRow('#a855f7', 'Pulsar', 'Emits pulsing shockwave rings. Don\'t linger on its surface when it fires.'),
+    gRow('#06b6d4', 'Wormhole', 'Linked pairs. Touch one to instantly warp to its twin across the map.'),
+    gRow('#ef4444', 'Unstable', `Detonates on a fuse after you land. Get off before it blows — base fuse upgradable to ${6}s.`),
+  ].join(''));
+
+  const hazards = gSec('#ef4444', 'Hazards — these end your run', [
+    gRow('#ff007f', 'Deep Space', `Drift more than ${C.PLAYER.DEEP_SPACE_THRESHOLD}px from any planet and you're lost to the void.`),
+    gRow('#f97316', 'Meteors', 'Fly in from off-screen on a heading. Dash out of the way.'),
+    gRow('#ff007f', 'Laser Grids', `Beams that toggle on/off every ${C.HAZARDS.LASER_CYCLE_TIME / 1000}s. Cross only while dark.`),
+    gRow('#ffa500', 'Debris Rings', 'Rocks orbiting a planet. Slip between them.'),
+    gRow('#8b5cf6', 'Black Holes', 'Roam the field and drag you in with strong gravity.'),
+    gRow('#ef4444', 'Volatile Mines', `Floating mines with a ${C.PLAYER.VOLATILE_MINE_FUSE / 1000}s fuse and a blast radius — keep clear.`),
+  ].join(''));
+
+  const helpers = gSec('#22c55e', 'Helpers', [
+    gRow('#22c55e', 'Boost Ring', 'Fly through to get flung forward at high speed.'),
+    gRow('#06b6d4', 'Refractor', 'Captures and re-aims your trajectory in a new direction.'),
+  ].join(''));
+
+  const V = C.ITEMS.VALUES;
+  const items = gSec('#d946ef', 'Pickups', `<div class="flex flex-wrap gap-2">${[
+    gChip('#d946ef', 'Energy Shard', ` <span class="text-yellow-400">+${V.SHARD_SCORE} pts</span>`),
+    gChip('#fbbf24', 'Gold Core', ` <span class="text-yellow-400">+${V.GOLD_CORE_SHARDS} shards · +${V.GOLD_CORE_SCORE} pts</span>`),
+    gChip('#00f0ff', 'Shield', ' survive one hit'),
+    gChip('#22c55e', 'Magnet', ` pulls shards in (${C.PLAYER.MAGNET_DURATION / 1000}s)`),
+  ].join('')}</div>`);
+
+  const upgrades = gSec('#d946ef', 'Upgrades (spend shards in the shop)', [
+    gRow('#00f0ff', 'Dash Core', 'Adds mid-air dash charges, up to 3 — more course corrections per jump.'),
+    gRow('#ef4444', 'Stasis', 'Extends the unstable-planet fuse, giving you more time to escape.'),
+    gRow('#d946ef', 'Trails', 'Cosmetic particle trail skins for your light.'),
+  ].join(''));
+
+  const tips = gSec('#22c55e', 'Tips', `<div class="flex flex-col gap-2">${[
+    'Read the Shift Gate color before you launch — green carries you, orange throws you back.',
+    'Hold to tighten your orbit when you need a more precise launch angle.',
+    'Save a dash charge for meteors and laser grids rather than spending it early.',
+    'Grab Gold Cores when safe — they\'re worth several shards toward the goal.',
+  ].map((t) => `<p class="flex gap-2 text-[12px] text-slate-300 leading-relaxed font-outfit"><span class="flex-none text-[#22c55e]">▸</span>${t}</p>`).join('')}</div>`);
+
+  guideBody.innerHTML = objective + controls + planets + hazards + helpers + items + upgrades + tips;
+}
+
+// One opener, two triggers (menu + in-game pause). z-50 sits above pause/settings (z-40).
+function openGuide(): void {
+  AudioManager.resumeContext();
+  renderGuide();
+  guideBody.scrollTop = 0;
+  gsap.set(guideOverlay, { display: 'flex', opacity: 0 });
+  guideOverlay.style.pointerEvents = 'auto';
+  gsap.to(guideOverlay, { opacity: 1, duration: 0.25 });
+}
+function closeGuide(): void {
+  gsap.to(guideOverlay, {
+    opacity: 0,
+    duration: 0.2,
+    onComplete: () => {
+      guideOverlay.style.display = 'none';
+      guideOverlay.style.pointerEvents = 'none';
+    }
+  });
+}
+document.getElementById('btn-guide')!.addEventListener('click', openGuide);
+document.getElementById('btn-pause-guide')!.addEventListener('click', openGuide);
+document.getElementById('btn-guide-close')!.addEventListener('click', closeGuide);
+
+
+// -------------------------------------------------------------
+// IV. AUDIO SYNC CONTROLLERS
 // -------------------------------------------------------------
 
 // Input sliders

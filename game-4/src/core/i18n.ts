@@ -247,6 +247,13 @@ export function setLang(lang: Lang): void {
   document.body.classList.toggle('lang-vi', lang === 'vi');
 }
 
+/** Translate a key in English specifically, ignoring the active language. */
+export function tEn(key: string, ...args: any[]): string {
+  const entry = EN[key] ?? key;
+  if (typeof entry === 'function') return entry(...args);
+  return entry as string;
+}
+
 /** Translate a key, with optional interpolation args. */
 export function t(key: string, ...args: any[]): string {
   const entry = DICTS[_lang]?.[key] ?? DICTS['vi']?.[key] ?? key;

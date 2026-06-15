@@ -8,7 +8,7 @@ import Shop from './scenes/Shop.ts';
 import EventBus from './EventBus.ts';
 import GameState from './core/GameState.ts';
 import AudioManager from './core/AudioManager.ts';
-import { WORLD, CARGO_TYPES, UPGRADES, RARITY_CSS, CargoKind, UpgradeKey } from './config.ts';
+import { WORLD, DRONE, CARGO_TYPES, UPGRADES, RARITY_CSS, CSS, CargoKind, UpgradeKey } from './config.ts';
 import { ROUTES } from './data/Levels.ts';
 
 // =====================================================================
@@ -296,6 +296,66 @@ EventBus.on('shop_data', (d: any) => {
   });
 });
 $('btn-shop-close').addEventListener('click', () => { hide('shop-panel'); EventBus.emit('shop_close'); });
+
+// =====================================================================
+// How to Play — built from config so it never drifts from the game.
+// =====================================================================
+function renderGuide(): void {
+  const sec = (color: string, title: string, inner: string) => `<div class="card rounded-2xl p-4 border flex flex-col gap-3" style="border-color:${color}33">
+    <div class="flex items-center gap-2"><span class="w-1.5 h-4 rounded-full flex-none" style="background:${color}"></span><span class="font-display font-bold text-[12px] tracking-[0.18em] uppercase text-white/90">${title}</span></div>${inner}</div>`;
+  const row = (glyph: string, color: string, name: string, body: string) => `<div class="flex gap-3 items-start">
+    <span class="w-7 h-7 flex-none mt-0.5 p-0.5">${glyph}</span>
+    <div><div class="font-display font-bold text-[13px]" style="color:${color}">${name}</div><div class="font-body text-[12.5px] text-white/60 leading-relaxed">${body}</div></div></div>`;
+  const chip = (color: string, label: string, extra = '') => `<span class="rounded-full px-2.5 py-1 text-[11.5px] flex items-center gap-1.5 border" style="border-color:${color}44;background:${color}11"><span class="w-2 h-2 rounded-full flex-none" style="background:${color}"></span>${label}${extra}</span>`;
+  const svg = (col: string, p: string) => `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+
+  const objective = sec(CSS.yellow, 'Objective', `<div class="font-body text-[12.5px] text-white/70 leading-relaxed">You pilot a gravity-bound delivery drone. Fly down to the <b style="color:${CSS.cyan}">crate</b>, auto-lock it onto your magnet tether, then haul it through the wall gates and land it on the <b style="color:${CSS.hullGood}">green pad</b> at the bottom → <b style="color:${CSS.hullGood}">DELIVERED</b>. Clear a route to unlock the next of <b>${ROUTES.length}</b> across <b>4 regions</b>.</div>`);
+
+  const controls = sec(CSS.cyan, 'Controls', [
+    row(svg(CSS.cyan, '<path d="M14 4l-2 16M9 8H4M9 16H4"/>'), CSS.cyan, 'Thrust', 'Hold the LEFT or RIGHT half of the screen to fire that engine — each pushes up and inward. Hold both to climb straight up; let go to fall.'),
+    row(svg(CSS.pink, '<circle cx="12" cy="6" r="3"/><path d="M12 9v6M8 19a4 4 0 0 1 8 0"/>'), CSS.pink, 'Magnet Lock', `Just fly within range of the crate — the tether auto-grabs it. It then dangles below and swings, so steer gently.`),
+    row(svg(CSS.hullGood, '<path d="M5 12l4 4 10-10"/>'), CSS.hullGood, 'Land', 'Lower the crate onto the green pad and let it settle to complete the route.'),
+  ].join(''));
+
+  const gauges = sec(CSS.orange, 'Gauges', [
+    row(svg(CSS.orange, '<rect x="4" y="6" width="12" height="14" rx="2"/><path d="M16 10h3v6M8 4h4"/>'), CSS.orange, 'Fuel', `Burns while an engine is held (${DRONE.fuelBurnPerSec}/s per engine). Hits <b style="color:${CSS.hullBad}">empty → run failed</b>. Land with fuel to spare for a bonus.`),
+    row(svg(CSS.pink, '<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16"/>'), CSS.pink, 'Cargo Integrity', `Every hard impact chips the crate. At <b style="color:${CSS.hullBad}">0 it is destroyed</b> and the route is lost. Deliver it intact for a bigger payout.`),
+  ].join(''));
+
+  const cargo = sec(CSS.pink, 'Cargo Types', `<div class="flex flex-col gap-1.5">` + (Object.keys(CARGO_TYPES) as CargoKind[]).map((k) => {
+    const d = CARGO_TYPES[k]; const col = RARITY_CSS[d.rarity];
+    return `<div class="flex items-center justify-between gap-2 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${col}">${d.name}</span><span class="text-white/55 text-[11px] text-right leading-tight">${CARGO_DESC[k]}<br><span class="text-neonYellow font-mono">◈${d.reward}</span> · ${d.rarity}</span></div>`;
+  }).join('') + `</div>`);
+
+  const hazards = sec(CSS.violet, 'Corridors & Hazards', [
+    row(svg(CSS.cyan, '<rect x="3" y="10" width="6" height="4"/><rect x="15" y="10" width="6" height="4"/>'), CSS.cyan, 'Wall Gates', 'Thread the drone AND the dangling crate through each opening — slamming a wall hurts the cargo.'),
+    row(svg(CSS.yellow, '<rect x="6" y="9" width="12" height="6" rx="1"/><path d="M3 12h3M18 12h3"/>'), CSS.yellow, 'Moving Platforms', 'Later routes add sliding bars that drift across the corridor — time your pass.'),
+    row(svg(CSS.lime, '<path d="M4 8h12a3 3 0 1 0-3-3M4 13h16a3 3 0 1 1-3 3M4 18h9"/>'), CSS.lime, 'Wind Zones', 'Gusts shove you sideways. Lean into them to hold your line through the gate.'),
+  ].join(''));
+
+  const scoring = sec(CSS.hullGood, 'Scoring', `<div class="font-body text-[12.5px] text-white/70 leading-relaxed">Each delivery pays <b>cargo reward + route bonus</b>, plus a <b style="color:${CSS.cyan}">fuel bonus</b> (leftover fuel) and an <b style="color:${CSS.lime}">intact bonus</b> (cargo health on landing). Earn ◈ Credits, then spend them in the Upgrade Bay.</div>`);
+
+  const ups = sec(CSS.violet, 'Upgrades (buy with ◈)', `<div class="flex flex-col gap-2">` + (Object.keys(UPGRADES) as UpgradeKey[]).map((k) => {
+    const m = UPGRADE_META[k];
+    return `<div class="flex items-center justify-between gap-3 text-[12.5px]"><span class="font-display font-bold flex-none" style="color:${m.color}">${m.name}</span><span class="text-white/55 text-[11px] text-right leading-tight">${m.desc} · max ${UPGRADES[k].maxLevel}</span></div>`;
+  }).join('') + `</div>`);
+
+  const tips = sec(CSS.cyan, 'Tips', `<div class="flex flex-col gap-2">` + [
+    'Tap engines in short bursts — constant thrust drains fuel and overshoots gates.',
+    'A laden drone is heavier and the crate swings — descend slowly near walls and the pad.',
+    'Match cargo to your skill: light loads pay more but shatter on a light tap.',
+    'Buy Cargo Shield before hauling fragile crates; Fuel Tank for long routes.',
+  ].map((t) => `<div class="flex gap-2.5 text-[12.5px] text-white/70 leading-relaxed"><span class="flex-none" style="color:${CSS.cyan}">▸</span>${t}</div>`).join('') + `</div>`);
+
+  const regions = sec(CSS.lime, 'Regions', `<div class="flex flex-wrap gap-2">` + REGION_NAMES.map((n, i) => chip(REGION_COL[i], n)).join('') + `</div>`);
+
+  $('guide-body').innerHTML = objective + controls + gauges + cargo + hazards + scoring + ups + tips + regions;
+}
+// One opener, two triggers (menu + in-game pause). z-50 layers over the pause panel (z-40).
+const openGuide = () => { AudioManager.uiTap(); renderGuide(); show('guide-panel'); $('guide-body').scrollTop = 0; };
+$('btn-menu-guide').addEventListener('click', openGuide);
+$('btn-pause-guide').addEventListener('click', openGuide);
+$('btn-guide-close').addEventListener('click', () => { AudioManager.uiTap(); hide('guide-panel'); });
 
 // =====================================================================
 // Settings

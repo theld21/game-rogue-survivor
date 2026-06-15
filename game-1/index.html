@@ -119,6 +119,10 @@
                     class="w-full py-3.5 cyber-btn cyber-btn-gold text-sm rounded-2xl border shadow-lg flex items-center justify-center gap-2">
                     <i data-lucide="play" class="w-4 h-4 fill-slate-950"></i> START GAME
                 </button>
+                <button id="open-guide-btn"
+                    class="w-full py-3 cyber-btn cyber-btn-cyan text-xs rounded-2xl border shadow-md flex items-center justify-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> HOW TO PLAY
+                </button>
                 <div class="grid grid-cols-2 gap-3 w-full">
                     <button id="open-shop-btn"
                         class="w-full py-3 cyber-btn cyber-btn-cyan text-xs rounded-2xl border shadow-md flex items-center justify-center gap-2">
@@ -496,6 +500,10 @@
                         class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-gold text-xs rounded-xl">
                         <i data-lucide="play" class="w-3.5 h-3.5 fill-slate-950"></i> CONTINUE
                     </button>
+                    <button id="pause-guide-btn"
+                        class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-cyan text-xs rounded-xl">
+                        <i data-lucide="book-open" class="w-3.5 h-3.5"></i> HOW TO PLAY
+                    </button>
                     <button id="pause-exit-btn"
                         class="w-full py-2.5 flex items-center justify-center gap-1.5 cyber-btn cyber-btn-dark text-xs rounded-xl">
                         <i data-lucide="log-out" class="w-3.5 h-3.5"></i> EXIT TO MENU
@@ -559,7 +567,7 @@
         <div id="settings-modal"
             class="ui-overlay ui-overlay-blocking justify-center items-center bg-slate-950/98 z-55 hidden p-4 flex-col overflow-y-auto cyber-grid-bg">
             <div
-                class="w-full max-w-sm p-6 cyber-panel border-slate-800 rounded-3xl shadow-2xl flex flex-col justify-between ui-element">
+                class="w-full max-w-sm p-6 cyber-panel border-slate-800 rounded-3xl shadow-2xl flex flex-col justify-between ui-element max-h-[88vh] overflow-y-auto">
                 <!-- Settings Header -->
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-white font-bold text-sm tracking-wider flex items-center gap-1.5 text-glow-cyan">
@@ -616,6 +624,36 @@
                             DELETE ALL DATA
                         </button>
                     </div>
+
+                    <!-- ABOUT / DEV INFO -->
+                    <div class="pt-4 border-t border-slate-900 text-left">
+                        <h4 class="text-cyan-400 font-bold text-[11px] tracking-[0.18em] uppercase mb-3 text-glow-cyan">
+                            About
+                        </h4>
+                        <div class="text-[11px] text-slate-300 leading-relaxed space-y-1.5">
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-500">Game</span>
+                                <span class="text-right text-white">Rogue Survivor · v1.0</span>
+                            </div>
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-500">Author</span>
+                                <span class="text-right text-white">Le Duy The <span class="text-cyan-400">(theld21)</span></span>
+                            </div>
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-500 shrink-0">Contact</span>
+                                <a href="mailto:thedev.ldt@gmail.com"
+                                    class="text-cyan-400 underline break-all text-right">thedev.ldt@gmail.com</a>
+                            </div>
+                        </div>
+                        <div class="text-[10.5px] text-slate-400 leading-relaxed mt-3 space-y-1.5">
+                            <p>A zero-asset top-down roguelike survivor — pick a hero, dodge swarms, level up, and crush the
+                                stage bosses. Every visual is drawn live in code with Phaser.</p>
+                            <p class="flex gap-1.5"><span class="shrink-0">🔒</span><span><b class="text-slate-200">No data
+                                        collected.</b> All progress is saved locally on the device. No servers, no
+                                    accounts, no ads, no analytics, no tracking. Works offline.</span></p>
+                        </div>
+                        <p class="text-[10px] text-slate-600 mt-3">© 2026 theld21</p>
+                    </div>
                 </div>
 
                 <!-- Settings Footer Buttons -->
@@ -630,6 +668,22 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <!-- 5.5. GIAO DIỆN HƯỚNG DẪN (HOW TO PLAY / GUIDE MODAL) -->
+        <div id="guide-modal"
+            class="ui-overlay ui-overlay-blocking flex-col bg-[#04020c]/98 z-60 hidden cyber-grid-bg px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1rem+env(safe-area-inset-bottom))]">
+            <!-- Header -->
+            <div class="w-full max-w-md mx-auto flex items-center justify-between mb-3 px-1 shrink-0">
+                <h2 class="glow-title text-lg font-black tracking-[0.15em] uppercase select-none">HOW TO PLAY</h2>
+                <button id="close-guide-btn"
+                    class="flex items-center justify-center w-9 h-9 bg-slate-900/60 border border-white/10 text-white rounded-xl hover:bg-white hover:text-slate-950 transition-all active:scale-90 cursor-pointer">
+                    <i data-lucide="x" class="w-4.5 h-4.5"></i>
+                </button>
+            </div>
+            <!-- Scrollable body (populated by uiBridge.renderGuide) -->
+            <div id="guide-body"
+                class="w-full max-w-md mx-auto flex-1 overflow-y-auto flex flex-col gap-3.5 px-1 pb-2"></div>
         </div>
 
         <!-- 0. GIAO DIỆN LOADING CHUYỂN CẢNH (LOADING UI OVERLAY) -->
