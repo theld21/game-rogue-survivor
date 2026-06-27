@@ -1,6 +1,7 @@
 import './index.css';
 import Phaser from 'phaser';
 import { gsap } from 'gsap';
+import { SplashScreen } from '@capacitor/splash-screen';
 import Preloader from './scenes/Preloader.ts';
 import Menu from './scenes/Menu.ts';
 import Dive from './scenes/Dive.ts';
@@ -8,6 +9,9 @@ import EventBus from './EventBus.ts';
 import GameState from './core/GameState.ts';
 import AudioManager from './core/AudioManager.ts';
 import { UPGRADES, UpgradeKey, REPAIR, RESOURCES, RESOURCE_KINDS, ZONES, CREATURES, CREATURE_KINDS, CSS } from './config.ts';
+
+// Hide native splash screen immediately when JS begins executing
+SplashScreen.hide().catch(() => {});
 
 // ---- Phaser (DPR-aware FIT) ----
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -51,7 +55,10 @@ document.querySelectorAll('[data-ic]').forEach((el) => { const k = (el as HTMLEl
 
 // ---- Loading ----
 EventBus.on('load_progress', (p: number) => { ($('loading-bar') as HTMLElement).style.width = Math.round(p * 100) + '%'; });
-EventBus.on('load_complete', () => { const el = $('loading-screen'); gsap.to(el, { opacity: 0, duration: 0.5, onComplete: () => (el.style.display = 'none') }); });
+EventBus.on('load_complete', () => {
+  const el = $('loading-screen');
+  gsap.to(el, { opacity: 0, duration: 0.5, onComplete: () => (el.style.display = 'none') });
+});
 
 // ---- Menu ----
 EventBus.on('enter_menu', () => {

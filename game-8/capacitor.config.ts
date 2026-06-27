@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.theld21.aetherdrift',
+  appId: 'com.theld21.aether_drift',
   appName: 'Aether Drift',
   webDir: 'dist',
   plugins: {

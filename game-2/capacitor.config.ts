@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.theld21.neonorbit',
-  appName: 'Neon Orbit: Gravity Jump',
+  appName: 'NeonOrbit',
   webDir: 'dist',
   plugins: {
     SplashScreen: {

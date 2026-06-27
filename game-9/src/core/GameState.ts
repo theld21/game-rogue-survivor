@@ -1,4 +1,3 @@
-import localforage from 'localforage';
 import { UPGRADES, UpgradeKey, REPAIR } from '../config.ts';
 
 // =====================================================================
@@ -23,21 +22,30 @@ const DEFAULT: ProfileData = {
   musicVol: 0.4, sfxVol: 0.8,
 };
 
-localforage.config({ name: 'AbyssDescent', storeName: 'profile' });
-
 export class GameState {
   private static data: ProfileData = { ...DEFAULT, upgrades: { ...DEFAULT.upgrades } };
   private static ready = false;
 
   static async hydrate(): Promise<ProfileData> {
     try {
-      const s = await localforage.getItem<ProfileData>(STORE_KEY);
-      if (s) this.data = { ...DEFAULT, ...s, upgrades: { ...DEFAULT.upgrades, ...(s.upgrades ?? {}) }, repair: Array.isArray(s.repair) && s.repair.length === REPAIR.length ? s.repair : REPAIR.map(() => 0) };
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw) as ProfileData;
+        this.data = { ...DEFAULT, ...s, upgrades: { ...DEFAULT.upgrades, ...(s.upgrades ?? {}) }, repair: Array.isArray(s.repair) && s.repair.length === REPAIR.length ? s.repair : REPAIR.map(() => 0) };
+      }
     } catch { this.data = { ...DEFAULT, upgrades: { ...DEFAULT.upgrades } }; }
     this.ready = true;
     return this.data;
   }
-  private static persist(): void { if (this.ready) void localforage.setItem(STORE_KEY, this.data).catch(() => {}); }
+  private static persist(): void {
+    if (this.ready) {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(this.data));
+      } catch (e) {
+        console.warn('Failed to save to localStorage:', e);
+      }
+    }
+  }
 
   static getCredits(): number { return this.data.credits; }
   static addCredits(n: number): void { this.data.credits = Math.max(0, this.data.credits + Math.round(n)); this.persist(); }
